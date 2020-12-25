@@ -1,0 +1,22 @@
+Adding Widget の一覧
+
+///どの小説を読むか決めるためのwidget
+/import_down = Dropdown(label="小説の選択", button_type="warning", menu=['ダウンロード済み', '新たにダウンロード'])
+/already_import = Select(title="小説", value="none", options=[])
+/text_input= TextInput(value="default",title="URLを入力してください:")
+
+///本の内容を映し出すwidget
+/p = Paragraph(text='',width=600, height=1000) #本文
+/title = Paragraph(text='', width =600, height = 10) #本のタイトル表示
+/author = Paragraph(text='', width =600, height = 50) #本の作者表示
+
+///読書する上でページをめくる、などするwidget
+/forward_button = Button(label='先へすすむ', button_type='success')
+/backward_button = Button(label='戻る', button_type='success')
+/page_slider = Slider(start=1, end=len(important.textline), value=1, step=1, title="現在の行数")
+
+///しおりをつけたり、しおりに飛ぶためのwidget
+/jump_mark = Dropdown(label="しおりに飛ぶ", button_type="warning", menu=[])
+/bookmark = Button(label='しおり', button_type='success')
+
+///
