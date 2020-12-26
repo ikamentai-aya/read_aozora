@@ -1168,13 +1168,13 @@ lay = Column(menu, reader)
 curdoc().add_root(lay)
 print('レイアウト生成完了')
 
-
+"""
 for i in novel_dict:
     path = novel_dict[i].graph_path
     path = path.replace('readerapp/', '')
     novel_dict[i].graph_path = 'dokusyo-aozora/'+path
     save()
-
+"""
 """
 for i,j in zip(['銀河鉄道の夜','レ・ミゼラブル','はつ恋','こころ','そして誰もいなくなった','注文の多い料理店'],['readerapp/data/graph_data/銀河鉄道の夜','readerapp/data/graph_data/レ・ミゼラブル','readerapp/data/graph_data/はつ恋','readerapp/data/graph_data/こころ','readerapp/data/graph_data/そして誰もいなくなった']):
     novel_dict[i].graph_path = j
