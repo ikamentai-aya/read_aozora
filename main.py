@@ -33,7 +33,7 @@ nlp = spacy.load('ja_ginza')
 
 #今読んでいる本の情報をいれる
 important = Important('','',[],[],800,0,[],[],[],'', dict())
-gr_path = 'data/graph_data/'
+gr_path = 'dokusyo-aozora/data/graph_data/'
 ch_frequency_dict = dict()
 people_candidate = []
 
@@ -66,7 +66,7 @@ def import_renderer(event):
         
 import_down.on_click(import_renderer)
 
-#pの操作あり
+
 #読む本を選択するための関数
 def already_import_renderer(attr, old, new):
     if not (already_import.value == 'none'):
@@ -154,7 +154,7 @@ def convert(download_text):
 #url_getのsub　routin
 def download(url):
     # データファイルをダウンロードする
-    zip_file = 'data/aozora/' + re.split(r'/', url)[-1]
+    zip_file = 'dokusyo-aozora/data/aozora/' + re.split(r'/', url)[-1]
     
     urllib.request.urlretrieve(url, zip_file)
     print('ここまで完了')
@@ -181,13 +181,13 @@ def download(url):
 
     #ファイルの移動
     paths = new_path.split('/')[-1]
-    check_path = 'data/aozora/' + paths
+    check_path = 'dokusyo-aozora/data/aozora/' + paths
     
     #if not os.path.exists(check_path):
     if not (check_path in already_novels):
         print('Download URL')
         print('URL:',url)
-        shutil.move(new_path, 'data/aozora')
+        shutil.move(new_path, 'dokusyo-aozora/data/aozora')
         shutil.rmtree(dir)
         return check_path
         
@@ -327,6 +327,7 @@ input_info = Dropdown(label="情報追加", button_type="warning", menu=['登場
 chracter_input = TextInput(value="default",title="人物を入力してください", width = 200)
 decide_ch = Button(label='以上の人物を追加', button_type='success', width = 200)
 
+#入力された情報を新しく登場人物としてデータに保存
 def chracter_renderer():
     
     ch_list = []
@@ -341,7 +342,7 @@ def chracter_renderer():
 
 decide_ch.on_click(chracter_renderer)
 
-
+#入力された情報を新しく関係性としてデータに保存
 def relation_renderer():
     
     new_dict = {'source':source_input.value, 'target':target_input.value, 'line':page_slider.value, 'emotion':emotion_input.value, 'relation':relation_input.value}
@@ -360,7 +361,7 @@ emotion_input = Slider(start=1, end=5, value=1, step=1, title="好意的か（5:
 decide_button = Button(label='以上の関係を追加', button_type='success', width=200)
 decide_button.on_click(relation_renderer)
     
-
+#これから登場人物を追加するのか、関係性を追加するのか決定する
 def input_renderer(event):
     curdoc().clear()
 
@@ -385,7 +386,7 @@ input_info.on_click(input_renderer)
 
 #必要な情報を保存する
 def save():
-    with open('data/novel_dict.binaryfile', 'wb') as sp:
+    with open('dokusyo-aozora/data/novel_dict.binaryfile', 'wb') as sp:
         pickle.dump([novel_dict,novel_list, already_novels] , sp)
 
 
@@ -576,17 +577,15 @@ def import_graph_info(save_path):
     
     source.data = dict(x=x_axis, y=y_list, text=node_indices)
 
-    os.remove(save_path)
+    os.remove(save_path+'.svg')
 
 
-def matrix_renderer(attr, old, new):
-    print(hm.value)
 
 show_range_spinner = Spinner(title="直近何ページの関係を表しますか", low=1, high=1, step=1, value=1, width=70)
 show_main_people = Select(title="この人を中心とする", value="none", options=['none'], width=200)
 show_people_check = CheckboxGroup(labels=[], active=[])
-#マトリックス図を作成する関数
 
+#マトリックス図を作成する関数
 def make_matrix_sub(center, initial_set):
     #p.text = important.textline[page_slider.value]
     line_number = page_slider.value 
@@ -761,7 +760,7 @@ show_people_check.on_change('active', show_people_renderer)
 show_range_spinner.on_change('value', show_range_renderer)
 
 
-
+#マトリックス図を選択されたときに表示する関数
 def make_matrix():
 
     curdoc().clear()
@@ -782,135 +781,7 @@ def make_matrix():
 
     make_matrix_sub(False, initial_set)
 
-    """
-    p.text = important.textline[page_slider.value]
-    line_number = page_slider.value
-
-    ch_list = important.people_list
-    ch_now_list = []
-    for i in ch_list:
-        if i['line'] <= page_slider.value: ch_now_list.append(i['people'])
     
-    relation_list = important.relation_list
-    re_now_list = []
-    re_emotion_list = []
-    for j in relation_list:
-        if j['line'] <= page_slider.value:
-            re_now_list.append([j['source'], j['target']])
-            re_emotion_list.append([j['emotion'],j['relation'],j['line']])
-  
-
-    colors = ['#000000', '#003333', '#006666', '#009999', '#00CCCC']
-    
-    x_mem = ch_now_list * len(ch_now_list)
-    y_mem = []
-    colors_list = []
-    relation_indices = []
-    for i in ch_now_list:y_mem += ([i]*len(ch_now_list))
-    
-    #color_listを作る
-    for i, j in zip(y_mem, x_mem):
-        if [i,j] in re_now_list:
-            i_j_color='white'
-            i_j_relation='none'
-            for k in range(len(re_now_list)):
-                if re_now_list[k] == [i,j]:
-                    pair = re_emotion_list[k]
-                    i_j_color=colors[int(pair[0])-1]
-                    i_j_relation=pair[1]
-            colors_list.append(i_j_color)
-            relation_indices.append(i_j_relation)
-        else:
-            colors_list.append('white')
-            relation_indices.append('none')
-
-    
-    hm_source = ColumnDataSource(data = dict(x = x_mem, y = y_mem, colors = colors_list, relation = relation_indices))
-    toolList = ['pan', 'box_zoom', 'lasso_select', 'poly_select', 'tap', 'reset', 'save']
-    hm = figure(title = '関係図(⬜️)', x_range = ch_now_list, y_range=ch_now_list, width = 600, height = 600, tools = toolList)
-  
-    hm.xaxis.axis_label = '誰への'
-    hm.yaxis.axis_label = '誰から'
-    
-    
-    hm.xaxis.major_label_orientation = math.pi/2
-    heat_renderer = GlyphRenderer(data_source=hm_source)
-    heat_renderer.glyph = Rect(x="x", y="y", width=1, height=1, fill_color="colors", line_color = 'black', line_alpha=0.3)
-    #heat_renderer.selection_glyph = Rect(line_color='red')
-
-    edge_hover_tool = HoverTool(tooltips=[("誰から","@y"),("誰への","@x"),("どんな関係","@relation")])
-    hm.add_tools(edge_hover_tool)
-    
-    hm.renderers.append(heat_renderer)
-
-    st_columns = [
-        TableColumn(field="line", title="ページ", width=70),
-        TableColumn(field="relation", title="関係性"),
-        TableColumn(field='emotion', title='好感度', width=70)
-    ]
-
-    st_text = PreText(text='', width=100, height=20)
-
-    def hmTap_callback():
-        if len(hm_source.selected.indices)>0:
-            select_Row=hm_source.selected.indices[0]
-            source = hm_source.data['y'][select_Row]
-            target = hm_source.data['x'][select_Row]
-
-            if [source, target] in re_now_list:
-                st_relation = []
-                st_emotion = []
-                st_lines = []
-
-                for k in range(len(re_now_list)):
-                    if re_now_list[k] == [source,target]:
-                        pair = re_emotion_list[k]
-                        st_emotion.append(int(pair[0]))
-                        st_relation.append(pair[1])
-                        st_lines.append(pair[2])
-
-                st_source=ColumnDataSource(dict(line=st_lines, relation=st_relation, emotion=st_emotion))
-                st_table = DataTable(source=st_source, columns=st_columns, width=600, height=250, editable = True, scroll_to_selection = True, selectable =True)
-                
-                def st_table_renderer(attr, old, new):
-                    if len(st_source.selected.indices) >0:
-                        st_select_row = st_source.selected.indices[0]
-                        page_slider.value = st_source.data['line'][st_select_row]
-
-                st_source.selected.on_change('indices', st_table_renderer)
-
-                st_text.text = source + 'から'+target+'への関係一覧'
-
-                curdoc().clear()
-                u_lay = Row(reader, Column(hm, st_text,st_table))
-                lay = Column(menu, u_lay)
-                curdoc().add_root(lay)
-
-            else:
-                curdoc().clear()
-                u_lay = Row(reader, hm)
-
-                lay = Column(menu, u_lay)
-                curdoc().add_root(lay)
-        else:
-            curdoc().clear()
-            u_lay = Row(reader, hm)
-            lay = Column(menu, u_lay)
-            curdoc().add_root(lay)
-
-
-                
-        
-
-
-    hm.on_event(events.Tap, hmTap_callback)
-
-    u_lay = Row(reader, hm)
-
-    lay = Column(menu, u_lay)
-    curdoc().add_root(lay)
-    """
-
 #キャラクターを削除する関数
 def ch_remove_renderer():
     selectionRow=ch_source.selected.indices
@@ -1265,9 +1136,9 @@ auto_ch.on_click(auto_character)
 
 
 ####システムを動かす上で格納したい情報を取得する####
-if os.path.exists('data/novel_dict.binaryfile'):
+if os.path.exists('dokusyo-aozora/data/novel_dict.binaryfile'):
     print('既にデータがあるのでロードします')
-    with open('data/novel_dict.binaryfile', 'rb') as sp:
+    with open('dokusyo-aozora/data/novel_dict.binaryfile', 'rb') as sp:
         novel = pickle.load(sp)
     novel_dict = novel[0]
     novel_list = novel[1]
@@ -1279,7 +1150,7 @@ else:
     novel_dict = {} #本のタイトルと
     already_novels = []
 
-with open('data/people_candidate.txt') as f:
+with open('dokusyo-aozora/data/people_candidate.txt') as f:
     people_candidate_txt = f.read()
 
 people_candidate = people_candidate_txt.split('\n')
@@ -1298,4 +1169,14 @@ curdoc().add_root(lay)
 print('レイアウト生成完了')
 
 
+for i in novel_dict:
+    path = novel_dict[i].graph_path
+    path = path.replace('readerapp/', '')
+    novel_dict[i].graph_path = 'dokusyo-aozora/'+path
+    save()
 
+"""
+for i,j in zip(['銀河鉄道の夜','レ・ミゼラブル','はつ恋','こころ','そして誰もいなくなった','注文の多い料理店'],['readerapp/data/graph_data/銀河鉄道の夜','readerapp/data/graph_data/レ・ミゼラブル','readerapp/data/graph_data/はつ恋','readerapp/data/graph_data/こころ','readerapp/data/graph_data/そして誰もいなくなった']):
+    novel_dict[i].graph_path = j
+save()
+"""
