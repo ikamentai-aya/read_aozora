@@ -44,14 +44,14 @@ provider = graph.layout_provider
 node_link.renderers.append(graph)
     
 source = ColumnDataSource(data = dict(x=[], y=[], text=[]))
-glyph = Text(x="x", y="y", text="text", text_color="black",text_font_size = "9px")
+glyph = Text(x="x", y="y", text="text", text_color="black",text_font_size = "9px", text_align="center")
 node_link.add_glyph(source, glyph)
 
 
 
 # linkの方向を示す△の実装
 head_source = ColumnDataSource(data=dict(xs=[], ys=[], color=[], line_color=[]))
-head_glyph = Patches(xs="xs", ys="ys", fill_color='color', line_color='line_color', fill_alpha=0.7)
+head_glyph = Patches(xs="xs", ys="ys", fill_color='color', line_color='line_color', fill_alpha=1.0)
 node_link.add_glyph(head_source, head_glyph)
 
 

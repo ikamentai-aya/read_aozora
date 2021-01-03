@@ -13,7 +13,7 @@ from bokeh.plotting import figure, output_file, show, curdoc
 from bokeh.models import ColumnDataSource
 from bokeh.layouts import Column, Row
 from bokeh import events
-from class1 import Important
+from class1 import Important, Group
 from modules.node import node_link, node_source, edge_source, source, provider
 from modules.matrix import hm
 
@@ -32,10 +32,11 @@ nlp = spacy.load('ja_ginza')
 #本ごとの読書情報を格納するクラス
 
 #今読んでいる本の情報をいれる
-important = Important('','',[],[],800,0,[],[],[],'', dict())
+important = Important('','',[],[],800,0,[],[],[],[],'', dict())
 gr_path = 'dokusyo-aozora/data/graph_data/'
 ch_frequency_dict = dict()
 people_candidate = []
+initial_set = False
 
 
 #実際に読書をする部分の設定
@@ -81,6 +82,7 @@ def already_import_renderer(attr, old, new):
         important.people_list = novel_dict[new_title].people_list
         important.relation_list = novel_dict[new_title].relation_list
         important.row_text = novel_dict[new_title].row_text
+        important.group_list = novel_dict[new_title].group_list
         ch_frequency_dict = novel_dict[new_title].ch_freq
 
         title.text = "<style> .info{font-size:15px;} </style>"+'<p class = "info">'+important.title+"<p/>"
@@ -123,6 +125,8 @@ def already_import_renderer(attr, old, new):
         if select_vis.value == '関係図(◯-◯)':make_node_link()
         if select_vis.value == '関係図(⬜️)': make_matrix()
         if select_vis.value == '編集画面':make_table()
+
+        initial_set = False
     
 already_import.on_change('value', already_import_renderer)
 
@@ -226,7 +230,7 @@ def url_get(attr, old, new):
         
         g_path = gr_path + title
         os.mkdir(g_path)
-        novel_dict[title] = Important(title, author, lines, row_lines,800, 0, [], [], [], g_path, dict())
+        novel_dict[title] = Important(title, author, lines, row_lines,800, 0, [], [], [], [], g_path, dict())
         novel_list.append(title)
         already_import.options = novel_list
         save()
@@ -322,7 +326,7 @@ bookmark.on_click(book_renderer)
 
 #関係を入力するフォーム
 
-input_info = Dropdown(label="情報追加", button_type="warning", menu=['登場人物追加', '関係性追加', '人物情報追加'], width=200)
+input_info = Dropdown(label="情報追加", button_type="warning", menu=['登場人物追加', '関係性追加', 'グループ追加'], width=200)
 
 chracter_input = TextInput(value="default",title="人物を入力してください", width = 200)
 decide_ch = Button(label='以上の人物を追加', button_type='success', width = 200)
@@ -360,6 +364,25 @@ relation_input = TextInput(value='default',title='どんな関係', width=200)
 emotion_input = Slider(start=1, end=5, value=1, step=1, title="好意的か（5:好意的、1:否定的）", width=200)
 decide_button = Button(label='以上の関係を追加', button_type='success', width=200)
 decide_button.on_click(relation_renderer)
+
+#入力された情報を新しくグループとしてデータに保存
+def group_renderer():
+    member = []
+    labels = member_input.labels
+    for i in member_input.active:member.append(labels[i])
+    group_name = group_name_input.value
+    print(group_name, member)
+    #new_group = Group(group_name, member)
+    #novel_dict[important.title].group_list.append(new_group)
+    #important.group_list = novel_dict[important.title].group_list
+    save()
+    
+
+group_name_input = TextInput(value='default',title='グループの名前', width=200)
+member_input = CheckboxGroup(labels=[], active=[])
+decide_group = Button(label='以上のグループを追加', button_type='success', width=200)
+decide_group.on_click(group_renderer)
+
     
 #これから登場人物を追加するのか、関係性を追加するのか決定する
 def input_renderer(event):
@@ -375,6 +398,15 @@ def input_renderer(event):
         source_input.options=people
         target_input.options=people
         lay_input = Column(input_info, source_input, target_input, relation_input, emotion_input, decide_button)
+
+    if event.item == 'グループ追加':
+        members = []
+        for i in important.people_list:
+            if i['line'] <= page_slider.value: members.append(i['people'])
+        member_input.labels = members
+        member_input.active = []
+        lay_input = Column(input_info, group_name_input, member_input, decide_group)
+
 
     menu = Row(lay1,lay2,bookmark, jump_mark, lay_input, import_down)
     reader = Column(title, author, p)
@@ -398,7 +430,7 @@ def select_vis_renderer(attr, old, new):
     
     if select_vis.value == '関係図(◯-◯)':
         curdoc().clear()
-        u_lay = Row(reader, node_link)
+        u_lay = Row(reader, Column(color_bar,node_link))
         make_node_link()
         lay = Column(menu, u_lay)
         curdoc().add_root(lay)
@@ -478,7 +510,7 @@ def import_graph_info(save_path):
             #re_emo_dict[j['emotion']-1].append([j['source'], j['target']])
             re_emo_dict[j['source']+j['target']] = j['emotion']-1
 
-    colors = ['#000000', '#003333', '#006666', '#009999', '#00CCCC']
+    colors = ['#C71463', '#FB423F', '#3B8694', '#14ABC7', '#00FA96']
  
 
     node_indices = [] #ノードのインデックス
@@ -584,6 +616,10 @@ def import_graph_info(save_path):
 show_range_spinner = Spinner(title="直近何ページの関係を表しますか", low=1, high=1, step=1, value=1, width=70)
 show_main_people = Select(title="この人を中心とする", value="none", options=['none'], width=200)
 show_people_check = CheckboxGroup(labels=[], active=[])
+colors = ['#C71463', '#FB423F', '#3B8694', '#14ABC7', '#00FA96']
+color_bar = figure(title = '', x_range = ['嫌い','好きじゃない','どっちでもない','好き','大好き'], y_range=['1'], width = 600, height = 70, tools = [])
+color_bar.rect(x= ['嫌い','好きじゃない','どっちでもない','好き','大好き'], y=['1','1','1','1','1'], width=1, height=1,line_color=None, fill_color=colors)
+
 
 #マトリックス図を作成する関数
 def make_matrix_sub(center, initial_set):
@@ -639,7 +675,8 @@ def make_matrix_sub(center, initial_set):
                 re_emotion_list.append([j['emotion'],j['relation'],j['line']])
         
    
-    colors = ['#000000', '#003333', '#006666', '#009999', '#00CCCC']
+    colors = ['#C71463', '#FB423F', '#3B8694', '#14ABC7', '#00FA96']
+    
     
     x_mem = ch_show_list * len(ch_show_list)
     y_mem = []
@@ -741,7 +778,7 @@ def make_matrix_sub(center, initial_set):
     hm.on_event(events.Tap, hmTap_callback)
 
     curdoc().clear()
-    u_lay = Row(reader, hm, Column(show_range_spinner, show_main_people, show_people_check))
+    u_lay = Row(reader, Column(color_bar,hm), Column(show_range_spinner, show_main_people, show_people_check))
 
     lay = Column(menu, u_lay)
     curdoc().add_root(lay)
@@ -1170,13 +1207,6 @@ print('レイアウト生成完了')
 
 """
 for i in novel_dict:
-    path = novel_dict[i].graph_path
-    path = path.replace('readerapp/', '')
-    novel_dict[i].graph_path = 'dokusyo-aozora/'+path
+    novel_dict[i].group_list = []
     save()
-"""
-"""
-for i,j in zip(['銀河鉄道の夜','レ・ミゼラブル','はつ恋','こころ','そして誰もいなくなった','注文の多い料理店'],['readerapp/data/graph_data/銀河鉄道の夜','readerapp/data/graph_data/レ・ミゼラブル','readerapp/data/graph_data/はつ恋','readerapp/data/graph_data/こころ','readerapp/data/graph_data/そして誰もいなくなった']):
-    novel_dict[i].graph_path = j
-save()
 """

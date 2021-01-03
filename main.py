@@ -576,9 +576,9 @@ def import_graph_info(save_path):
         #head_source.data = dict(xs=t_xs, ys=t_ys, color = edge_color, line_color = edge_color)
 
     provider.graph_layout = dict(zip(node_indices,zip(x_list,y_list)))
-    x_axis = [i for i in x_list]
+
     
-    source.data = dict(x=x_axis, y=y_list, text=node_indices)
+    source.data = dict(x=x_list, y=y_list, text=node_indices)
 
     os.remove(save_path+'.svg')
 
