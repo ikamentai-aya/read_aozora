@@ -20,16 +20,19 @@ graph.node_renderer.glyph = Ellipse(height='ry', width='rx', fill_color='color')
 edge_source= graph.edge_renderer.data_source
 edge_source.data = dict(start=[],end=[], index = [], color = [], emotion = [], xs = [], ys=[])
 
-graph.edge_renderer.glyph = MultiLine(line_color='color', line_alpha=0.7, line_width=5)
+graph.edge_renderer.glyph = MultiLine(line_color='color', line_alpha=0.4, line_width=5)
 #graph.edge_renderer.glyph = Arrow(end=NormalHead(fill_color="orange"), x_start=1, y_start=0, x_end=0.5, y_end=0.7)
 
 #interactionの追加
-graph.node_renderer.selection_glyph = Ellipse(height=10, width=15, fill_color='orange')
-graph.node_renderer.hover_glyph = Ellipse(height=10, width=15, fill_color='orange')
-graph.edge_renderer.selection_glyph = MultiLine(line_color='orange', line_width=5)
-graph.edge_renderer.hover_glyph = MultiLine(line_color='orange', line_width=5)
+
+graph.node_renderer.selection_glyph = Ellipse(height=10, width=15, fill_color='#F9BF33')
+graph.node_renderer.hover_glyph = Ellipse(height=10, width=15, fill_color='#F9BF33')
+graph.edge_renderer.selection_glyph = MultiLine(line_alpha=1.0, line_width=5, line_color='color')
+graph.edge_renderer.hover_glyph = MultiLine(line_alpha=1.0, line_width=5, line_color='color')
 graph.selection_policy = NodesAndLinkedEdges()
 graph.inspection_policy = EdgesAndLinkedNodes()
+
+
 
 #HoverToolの追加
 node_hover_tool = HoverTool(tooltips=[("person","@index")],renderers=[graph.node_renderer])
@@ -51,7 +54,7 @@ node_link.add_glyph(source, glyph)
 
 # linkの方向を示す△の実装
 head_source = ColumnDataSource(data=dict(xs=[], ys=[], color=[], line_color=[]))
-head_glyph = Patches(xs="xs", ys="ys", fill_color='color', line_color='line_color', fill_alpha=1.0)
+head_glyph = Patches(xs="xs", ys="ys", fill_color='color', line_color='line_color', fill_alpha=0.7)
 node_link.add_glyph(head_source, head_glyph)
 
 

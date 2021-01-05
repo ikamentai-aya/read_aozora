@@ -16,6 +16,7 @@ class Important:
 
 #グループのクラス
 class Group:
-    def __init__(name, member):
+    def __init__(self, name, member):
         self.name = name #グループ名
         self.member = member #グループのメンバー
+
