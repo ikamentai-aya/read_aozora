@@ -37,7 +37,7 @@ important = Important('','',[],[],800,0,[],[],[],[],'', dict())
 gr_path = 'dokusyo-aozora/data/graph_data/'
 ch_frequency_dict = dict()
 people_candidate = []
-initial_set = False
+initial_set= False
 
 
 #実際に読書をする部分の設定
@@ -72,7 +72,10 @@ import_down.on_click(import_renderer)
 #読む本を選択するための関数
 def already_import_renderer(attr, old, new):
     if not (already_import.value == 'none'):
-
+        
+        print('already_import_renderer')
+        global initial_set
+        initial_set=True
         #importantの書き換え
         new_title = already_import.value
         important.title = novel_dict[new_title].title
@@ -123,11 +126,13 @@ def already_import_renderer(attr, old, new):
             lay = Column(menu, reader)
             curdoc().add_root(lay)
 
+        print('end')
+        initial_set=False
+
         if select_vis.value == '関係図(◯-◯)':make_node_link()
         if select_vis.value == '関係図(⬜️)': make_matrix()
         if select_vis.value == '編集画面':make_table()
 
-        initial_set = False
     
 already_import.on_change('value', already_import_renderer)
 
@@ -624,13 +629,16 @@ color_bar.rect(x= ['嫌い','好きじゃない','どっちでもない','好き
 
 
 #マトリックス図を作成する関数
-def make_matrix_sub(center, initial_set):
+def make_matrix_sub(center):
     #p.text = important.textline[page_slider.value]
     line_number = page_slider.value 
 
     ch_now_list = show_people_check.labels
     relation_list = important.relation_list
-    if initial_set: show_people_check.active = list(range(len(ch_now_list)))
+    global initial_set
+
+    if initial_set == True: 
+        show_people_check.active = list(range(len(ch_now_list))) 
 
     re_now_list = []
     re_emotion_list = []
@@ -788,13 +796,20 @@ def make_matrix_sub(center, initial_set):
     curdoc().add_root(lay)
 
 def show_main_renderer(attr, old, new):
-    make_matrix_sub(True, False)
+    print('show_main_renderer')
+    make_matrix_sub(True)
 
 def show_people_renderer(attr, old, new):
-    make_matrix_sub(False, False)
+    global initial_set
+    if initial_set == False:
+        print('show_people_renderer')
+        make_matrix_sub(False)
 
 def show_range_renderer(attr, old, new):
-    if not(show_range_spinner.value == len(important.textline)):make_matrix_sub(False, False)
+    global initial_set
+    if initial_set == False:
+        print('show_range_renderer')
+        make_matrix_sub(False)
 
 show_main_people.on_change('value', show_main_renderer)
 show_people_check.on_change('active', show_people_renderer)
@@ -805,9 +820,7 @@ show_range_spinner.on_change('value', show_range_renderer)
 def make_matrix():
 
     curdoc().clear()
-    initial_set = False
 
-    #if show_range_spinner.high == 1: initial_set = True 
     show_range_spinner.high = len(important.textline)
     
     ch_list = important.people_list
@@ -820,7 +833,7 @@ def make_matrix():
     show_main_people.options = ['none']+ ch_now_list
     show_people_check.labels = ch_now_list 
 
-    make_matrix_sub(False, initial_set)
+    make_matrix_sub(False)
 
     
 #キャラクターを削除する関数

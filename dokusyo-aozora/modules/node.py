@@ -20,15 +20,15 @@ graph.node_renderer.glyph = Ellipse(height='ry', width='rx', fill_color='color')
 edge_source= graph.edge_renderer.data_source
 edge_source.data = dict(start=[],end=[], index = [], color = [], emotion = [], xs = [], ys=[])
 
-graph.edge_renderer.glyph = MultiLine(line_color='color', line_alpha=0.4, line_width=5)
+graph.edge_renderer.glyph = MultiLine(line_color='color', line_alpha=0.5, line_width=5)
 #graph.edge_renderer.glyph = Arrow(end=NormalHead(fill_color="orange"), x_start=1, y_start=0, x_end=0.5, y_end=0.7)
 
 #interactionの追加
 
 graph.node_renderer.selection_glyph = Ellipse(height=10, width=15, fill_color='#F9BF33')
 graph.node_renderer.hover_glyph = Ellipse(height=10, width=15, fill_color='#F9BF33')
-graph.edge_renderer.selection_glyph = MultiLine(line_alpha=1.0, line_width=5, line_color='color')
-graph.edge_renderer.hover_glyph = MultiLine(line_alpha=1.0, line_width=5, line_color='color')
+graph.edge_renderer.selection_glyph = MultiLine(line_alpha=1.0, line_width=8, line_color='color')
+graph.edge_renderer.hover_glyph = MultiLine(line_alpha=1.0, line_width=8, line_color='color')
 graph.selection_policy = NodesAndLinkedEdges()
 graph.inspection_policy = EdgesAndLinkedNodes()
 
