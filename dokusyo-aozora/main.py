@@ -514,6 +514,7 @@ def import_graph_info(save_path):
             #re_emo_dict[j['emotion']-1].append([j['source'], j['target']])
             re_emo_dict[j['source']+j['target']] = j['emotion']-1
 
+    #colors=['#C41A1A','#C46868','#C4B7B7','#A9D9CD','#27D9AE']
     colors = ['#76487A', '#9F86BC', '#F9BF33', '#F1B0B2', '#CB5266']
     #colors = ['#000000', '#003333', '#006666', '#009999', '#00CCCC']
     #colors = ['#C71463', '#FB423F', '#3B8694', '#14ABC7', '#00FA96']
@@ -622,6 +623,7 @@ def import_graph_info(save_path):
 show_range_spinner = Spinner(title="直近何ページの関係を表しますか", low=1, high=1, step=1, value=1, width=70)
 show_main_people = Select(title="この人を中心とする", value="none", options=['none'], width=200)
 show_people_check = CheckboxGroup(labels=[], active=[])
+#colors=['#C41A1A','#C46868','#C4B7B7','#A9D9CD','#27D9AE']
 colors = ['#76487A', '#9F86BC', '#F9BF33', '#F1B0B2', '#CB5266']
 #colors = ['#000000', '#003333', '#006666', '#009999', '#00CCCC']
 color_bar = figure(title = '', x_range = ['嫌い','好きじゃない','どっちでもない','好き','大好き'], y_range=['1'], width = 600, height = 70, tools = [])
@@ -655,6 +657,8 @@ def make_matrix_sub(center):
                 if (i['line'] >= start_line) and (i['line'] <= page_slider.value):ch_show_list.append(i['people'])
             for j in relation_list:
                 if j['line'] >= start_line: 
+                    ch_show_list.append(j['source'])
+                    ch_show_list.append(j['target'])
                     re_now_list.append([j['source'], j['target']])
                     re_emotion_list.append([j['emotion'],j['relation'],j['line']])
             show_people_check.active = list(range(len(ch_now_list)))
@@ -686,7 +690,8 @@ def make_matrix_sub(center):
    
     #colors = ['#C71463', '#FB423F', '#3B8694', '#14ABC7', '#00FA96']
     #colors = ['#000000', '#003333', '#006666', '#009999', '#00CCCC'] 
-    colors = ['#76487A', '#9F86BC', '#F9BF33', '#F1B0B2', '#CB5266']
+    colors = ['#76487A', '#9F86BC', '#F9BF33', '#F1B0B2', '#CB5266'] 
+    #colors=['#C41A1A','#C46868','#C4B7B7','#A9D9CD','#27D9AE']
 
     
     
@@ -972,7 +977,7 @@ def ch_select_renderer(attr, old, new):
     x_range=[str(i) for i in range(len(important.textline))]
     height = len(person)*10
     toolList = ['pan', 'box_zoom', 'lasso_select', 'poly_select', 'tap', 'reset', 'save']
-    frequency_heat = figure(plot_width=700, plot_height=200, x_range=x_range, y_range=person, tools=toolList)
+    frequency_heat = figure(plot_width=700, plot_height=150, x_range=x_range, y_range=person, tools=toolList)
     
     xs = list(range(len(important.textline))) * len(person)
     ys = []
@@ -1025,7 +1030,7 @@ ch_columns = [
         TableColumn(field="people", title="人物名"),
         TableColumn(field="line", title="初登場ページ"),
     ]
-ch_table = DataTable(source=ch_source, columns=ch_columns, width=600, height=250, editable = True, scroll_to_selection = True, selectable = 'checkbox')
+ch_table = DataTable(source=ch_source, columns=ch_columns, width=600, height=200, editable = True, scroll_to_selection = True, selectable = 'checkbox')
 
 re_source=ColumnDataSource(data=dict(source=[], target=[], relation=[], emotion = [], line=[]))
 re_columns = [
@@ -1035,7 +1040,7 @@ re_columns = [
     TableColumn(field="emotion", title="好感度"),
     TableColumn(field="line", title="ページ")
 ]
-re_table = DataTable(source=re_source, columns=re_columns, width=600, height=250, editable = True, scroll_to_selection = True, selectable =True)
+re_table = DataTable(source=re_source, columns=re_columns, width=600, height=200, editable = True, scroll_to_selection = True, selectable =True)
 
 
 ch_delete_button = Button(label='消去', button_type='success', width =100)
@@ -1101,7 +1106,10 @@ add_ch = Button(label='追加', button_type='success', width = 70)
 def auto_character():
     peoples = [i['people'] for i in important.people_list]
     use_text = novel_dict[important.title].row_text[important.pageNumber]
+
     ginza_set = set()
+
+    #MeCabで作った辞書のリストと合致するものを抽出する
     m = MeCab.Tagger("-Ochasen")
     mecab_text = m.parse(use_text)
     mecab_line = mecab_text.split('\n')[:-1]
@@ -1120,14 +1128,11 @@ def auto_character():
     for i in people_ca:
         if not(i in peoples):ginza_set.add(i)
 
-    
-    
-    
-    print('固有表現')
+
     doc = nlp(use_text)
     ginza_only_set=set()
+    print(doc.ents)
     for ent in doc.ents:
-        #print(ent.text, ent.label_)
         if (ent.label_ in ['Person', 'Position_Vocation']) and (not('\u3000' in ent.text)) and (not(ent.text in peoples)):
             ginza_set.add(ent.text)
             ginza_only_set.add(ent.text)
@@ -1135,6 +1140,8 @@ def auto_character():
     print('ginzaの結果:', ginza_only_set)
     
     checkbox_group.labels = list(ginza_set)
+
+    #レイアウトの変更
     curdoc().clear()
     lay2 = Column(Row(forward_button, backward_button), auto_ch,checkbox_group)
     checkbox_group.active = list(range(len(list(ginza_set))))

@@ -1,0 +1,96 @@
+digraph {
+	graph [size="600,600"]
+	node [fixedsize=true height=250 width=750]
+	"ヴォーグレイブ判事"
+	node [fixedsize=true height=120 width=360]
+	"コンスタンス・カミルトン"
+	node [fixedsize=true height=110 width=330]
+	"ユーナ・ナンシー・オーエン"
+	node [fixedsize=true height=180 width=540]
+	"ヴェラ・クレイソーン"
+	node [fixedsize=true height=120 width=360]
+	"ヒューゴー"
+	node [fixedsize=true height=110 width=330]
+	"シリル・ハミルトン"
+	node [fixedsize=true height=170 width=510]
+	"フィリップ・ロンバート"
+	node [fixedsize=true height=120 width=360]
+	"アイザック・モリス"
+	node [fixedsize=true height=140 width=420]
+	"エミリー・ブレンド"
+	node [fixedsize=true height=130 width=390]
+	"マッカーサー将軍"
+	node [fixedsize=true height=150 width=450]
+	"アームストロング医師"
+	node [fixedsize=true height=130 width=390]
+	"アンソニー・マーストン"
+	node [fixedsize=true height=150 width=450]
+	"ブロア"
+	node [fixedsize=true height=130 width=390]
+	"ロジャーズ夫"
+	node [fixedsize=true height=100 width=300]
+	"フレッド・ナラコット"
+	node [fixedsize=true height=110 width=330]
+	"エドワード・シートン"
+	node [fixedsize=true height=100 width=300]
+	"ジェニファー・ブレイディー"
+	node [fixedsize=true height=110 width=330]
+	"ジェイムズ・スティーブン・ランドー"
+	node [fixedsize=true height=110 width=330]
+	"ルーシー・クームズ"
+	node [fixedsize=true height=110 width=330]
+	"ジョン・クームズ"
+	node [fixedsize=true height=130 width=390]
+	"ルイーザ・メアリ・クリース"
+	node [fixedsize=true height=110 width=330]
+	"アーサー・リッチモンド"
+	node [fixedsize=true height=110 width=330]
+	"ビアトリス・テイラー"
+	node [fixedsize=true height=110 width=330]
+	"東アジアの部族民21名"
+	node [fixedsize=true height=110 width=330]
+	"レズリー"
+	node [fixedsize=true height=100 width=300]
+	"トマス・レッグ卿"
+	node [fixedsize=true height=100 width=300]
+	"メイン警部"
+	node [fixedsize=true height=120 width=360]
+	"ロジャーズ妻"
+	"ヴォーグレイブ判事" -> "コンスタンス・カミルトン" [label="知人"]
+	"ユーナ・ナンシー・オーエン" -> "ヴェラ・クレイソーン" [label="仕事の依頼"]
+	"アイザック・モリス" -> "フィリップ・ロンバート" [label="仕事の紹介"]
+	"ヴォーグレイブ判事" -> "ヴェラ・クレイソーン" [label="気に入らない"]
+	"ヴォーグレイブ判事" -> "エドワード・シートン" [label="死刑になるように工作？"]
+	"ヴェラ・クレイソーン" -> "シリル・ハミルトン" [label="溺死するように工作？"]
+	"エミリー・ブレンド" -> "ビアトリス・テイラー" [label="自殺させた？"]
+	"マッカーサー将軍" -> "アーサー・リッチモンド" [label="意図的に戦死させた？"]
+	"アームストロング医師" -> "ルイーザ・メアリ・クリース" [label="手術中死亡させた？"]
+	"アンソニー・マーストン" -> "ジョン・クームズ" [label="轢き殺した"]
+	"アンソニー・マーストン" -> "ルーシー・クームズ" [label="轢き殺した"]
+	"ブロア" -> "ジェイムズ・スティーブン・ランドー" [label="有罪にする"]
+	"ロジャーズ夫" -> "ルイーザ・メアリ・クリース" [label="殺害"]
+	"ロジャーズ妻" -> "ルイーザ・メアリ・クリース" [label="殺害"]
+	"フィリップ・ロンバート" -> "東アジアの部族民21名" [label="殺害"]
+	"コンスタンス・カミルトン" -> "ヴォーグレイブ判事" [label="招待"]
+	"マッカーサー将軍" -> "レズリー" [label="夫婦"]
+	"ヴェラ・クレイソーン" -> "ヒューゴー" [label="恋人未満、片思い"]
+	"ブロア" -> "ロジャーズ夫" [label="ロジャーズ妻の殺害容疑"]
+	"ヴェラ・クレイソーン" -> "エミリー・ブレンド" [label="恐ろしいと思う"]
+	"アームストロング医師" -> "フィリップ・ロンバート" [label="捜索の相談、信頼"]
+	"ブロア" -> "フィリップ・ロンバート" [label="ピストルの所有を疑う"]
+	"フィリップ・ロンバート" -> "ヴォーグレイブ判事" [label="疑い"]
+	"ヴェラ・クレイソーン" -> "アームストロング医師" [label="疑い"]
+	"フィリップ・ロンバート" -> "ヴェラ・クレイソーン" [label="信頼"]
+	"ブロア" -> "エミリー・ブレンド" [label="疑い"]
+	"ヴェラ・クレイソーン" -> "フィリップ・ロンバート" [label="殺害"]
+	"ヒューゴー" -> "ヴォーグレイブ判事" [label="情報提供"]
+	"ヴォーグレイブ判事" -> "アイザック・モリス" [label="殺害"]
+	"ヴォーグレイブ判事" -> "アンソニー・マーストン" [label="殺害"]
+	"ヴォーグレイブ判事" -> "ロジャーズ妻" [label="殺害"]
+	"ヴォーグレイブ判事" -> "マッカーサー将軍" [label="殺害"]
+	"ヴォーグレイブ判事" -> "ロジャーズ夫" [label="殺害"]
+	"ヴォーグレイブ判事" -> "エミリー・ブレンド" [label="殺害"]
+	"アームストロング医師" -> "ヴォーグレイブ判事" [label="信頼、協力関係"]
+	"ヴォーグレイブ判事" -> "ブロア" [label="殺害"]
+	"ヴォーグレイブ判事" -> "アームストロング医師" [label="殺害"]
+}

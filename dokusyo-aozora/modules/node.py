@@ -25,8 +25,8 @@ graph.edge_renderer.glyph = MultiLine(line_color='color', line_alpha=0.5, line_w
 
 #interactionの追加
 
-graph.node_renderer.selection_glyph = Ellipse(height=10, width=15, fill_color='#F9BF33')
-graph.node_renderer.hover_glyph = Ellipse(height=10, width=15, fill_color='#F9BF33')
+graph.node_renderer.selection_glyph = Ellipse(height=10, width=15, fill_color='#F9BF33', fill_alpha=0.7)
+graph.node_renderer.hover_glyph = Ellipse(height=10, width=15, fill_color='#F9BF33',fill_alpha=0.7)
 graph.edge_renderer.selection_glyph = MultiLine(line_alpha=1.0, line_width=8, line_color='color')
 graph.edge_renderer.hover_glyph = MultiLine(line_alpha=1.0, line_width=8, line_color='color')
 graph.selection_policy = NodesAndLinkedEdges()

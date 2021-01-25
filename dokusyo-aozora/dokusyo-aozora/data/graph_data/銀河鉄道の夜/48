@@ -1,0 +1,10 @@
+digraph {
+	graph [size="600,600"]
+	node [fixedsize=true height=100 width=300]
+	"カムパネルラ"
+	node [fixedsize=true height=110 width=330]
+	"ジョバンニ"
+	node [fixedsize=true height=110 width=330]
+	"先生"
+	"先生" -> "ジョバンニ" [label="授業中当てる"]
+}
