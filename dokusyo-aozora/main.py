@@ -6,6 +6,7 @@ import os.path,glob
 import pickle
 import shutil
 import math
+import pathlib
 
 import numpy as np
 from bokeh.models import Paragraph,TextInput, PreText, Button, Slider, Dropdown, Select, Div, HoverTool, TapTool, BoxSelectTool, LinearColorMapper, BasicTicker, PrintfTickFormatter, ColorBar, CheckboxButtonGroup, Rect, CheckboxGroup, DataTable, TableColumn, GlyphRenderer, Spinner
@@ -167,6 +168,10 @@ def download(url):
     zip_file = 'dokusyo-aozora/data/aozora/' + re.split(r'/', url)[-1]
     
     print('ダウンロード開始')
+    p_new = pathlib.Path(zip_file)
+    with p_new.open(mode='w') as f:
+        f.write('')
+
     urllib.request.urlretrieve(url, zip_file)
     print('ここまで完了')
 
