@@ -1108,7 +1108,7 @@ def auto_character():
     use_text = novel_dict[important.title].row_text[important.pageNumber]
 
     ginza_set = set()
-
+    """
     #MeCabで作った辞書のリストと合致するものを抽出する
     m = MeCab.Tagger("-Ochasen")
     mecab_text = m.parse(use_text)
@@ -1128,7 +1128,7 @@ def auto_character():
     for i in people_ca:
         if not(i in peoples):ginza_set.add(i)
 
-
+    """
     doc = nlp(use_text)
     ginza_only_set=set()
     print(doc.ents)
