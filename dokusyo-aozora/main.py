@@ -166,6 +166,7 @@ def download(url):
     # データファイルをダウンロードする
     zip_file = 'dokusyo-aozora/data/aozora/' + re.split(r'/', url)[-1]
     
+    print('ダウンロード開始')
     urllib.request.urlretrieve(url, zip_file)
     print('ここまで完了')
 
