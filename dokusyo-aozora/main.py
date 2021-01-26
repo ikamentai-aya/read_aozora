@@ -1225,4 +1225,3 @@ lay = Column(menu, reader)
 curdoc().add_root(lay)
 print('レイアウト生成完了')
 
-#変更
