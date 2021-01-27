@@ -38,8 +38,10 @@ important = Important('','',[],[],800,0,[],[],[],[],'', dict())
 gr_path = 'dokusyo-aozora/data/graph_data/'
 ch_frequency_dict = dict()
 people_candidate = []
-initial_set= False
-
+global initial_set
+initial_set = False
+global center_set
+center_set = False
 
 #実際に読書をする部分の設定
 
@@ -130,8 +132,8 @@ def already_import_renderer(attr, old, new):
         print('end')
         initial_set=False
 
-        if select_vis.value == '関係図(◯-◯)':make_node_link()
-        if select_vis.value == '関係図(⬜️)': make_matrix()
+        if select_vis.value == '人物相関図':make_node_link()
+        if select_vis.value == '人物相関表': make_matrix()
         if select_vis.value == '編集画面':make_table()
 
     
@@ -166,11 +168,8 @@ def convert(download_text):
 def download(url):
     # データファイルをダウンロードする
     zip_file = 'dokusyo-aozora/data/aozora/' + re.split(r'/', url)[-1]
-    
-    print('ダウンロード開始')
 
     urllib.request.urlretrieve(url, zip_file)
-    print('ここまで完了')
 
     # フォルダの生成
     dir, ext = os.path.splitext(zip_file)
@@ -289,8 +288,8 @@ def page_slider_renderer(attr, new, old):
     novel_dict[important.title].pageNumber = head
     p.text = important.textline[head]
 
-    if select_vis.value == '関係図(◯-◯)':make_node_link()
-    if select_vis.value == '関係図(⬜️)': make_matrix()
+    if select_vis.value == '人物相関図':make_node_link()
+    if select_vis.value == '人物相関表': make_matrix()
     if select_vis.value == '編集画面': 
         person = [ch_source.data['people'][i] for i in ch_source.selected.indices]
         novel_coloring(person, 'yellow')
@@ -349,8 +348,8 @@ def chracter_renderer():
         novel_dict[important.title].people_list.append({'people':chracter_input.value, 'line':page_slider.value})
         important.people_list=novel_dict[important.title].people_list 
         save()
-        if select_vis.value == '関係図(◯-◯)':make_node_link()
-        if select_vis.value == '関係図(⬜️)': make_matrix()
+        if select_vis.value == '人物相関図':make_node_link()
+        if select_vis.value == '人物相関表': make_matrix()
 
 decide_ch.on_click(chracter_renderer)
 
@@ -363,8 +362,8 @@ def relation_renderer():
     #novel_dict[important.title].relation_list.append({'source':source_input.value, 'target':target_input.value, 'line':important['headNumber'], 'emotion':emotion_input.value, 'relation':relation_input.value})
     important.relation_list = novel_dict[important.title].relation_list
     save()
-    if select_vis.value == '関係図(◯-◯)':make_node_link()
-    if select_vis.value == '関係図(⬜️)': make_matrix()
+    if select_vis.value == '人物相関図':make_node_link()
+    if select_vis.value == '人物相関表': make_matrix()
 
 source_input = Select(title='誰から',value='none',options=['none'], width=200)
 target_input = Select(title='誰への',value='none',options=['none'], width=200)
@@ -431,18 +430,18 @@ def save():
 
 
 ####可視化の選択など####
-select_vis = Select(title="可視化の選択", value="表示なし", options=['表示なし', '関係図(◯-◯)', '関係図(⬜️)','編集画面'], width=200)
+select_vis = Select(title="可視化の選択", value="表示なし", options=['表示なし', '人物相関図', '人物相関表','編集画面'], width=200)
 
 def select_vis_renderer(attr, old, new):
     
-    if select_vis.value == '関係図(◯-◯)':
+    if select_vis.value == '人物相関図':
         curdoc().clear()
         u_lay = Row(reader, Column(color_bar,node_link))
         make_node_link()
         lay = Column(menu, u_lay)
         curdoc().add_root(lay)
 
-    elif select_vis.value == '関係図(⬜️)':
+    elif select_vis.value == '人物相関表':
         make_matrix()
 
     elif select_vis.value == '編集画面':
@@ -640,7 +639,10 @@ def make_matrix_sub(center):
 
     ch_now_list = show_people_check.labels
     relation_list = important.relation_list
+    
     global initial_set
+    global center_set
+
 
     if initial_set == True: 
         show_people_check.active = list(range(len(ch_now_list))) 
@@ -649,22 +651,25 @@ def make_matrix_sub(center):
     re_emotion_list = []
     start_line = max(page_slider.value - show_range_spinner.value, 0)#ここからの関係を写す
 
-    
-
-    
     if center == True:
+        center_set = True
         main_people = show_main_people.value
         if main_people == 'none':
-            ch_show_list = []
+            print('noneが選ばれました')
+            ch_show_list =set()
             for i in important.people_list:
-                if (i['line'] >= start_line) and (i['line'] <= page_slider.value):ch_show_list.append(i['people'])
+                if (i['line'] >= start_line) and (i['line'] <= page_slider.value):ch_show_list.add(i['people'])
             for j in relation_list:
                 if j['line'] >= start_line: 
-                    ch_show_list.append(j['source'])
-                    ch_show_list.append(j['target'])
+                    ch_show_list.add(j['source'])
+                    ch_show_list.add(j['target'])
                     re_now_list.append([j['source'], j['target']])
                     re_emotion_list.append([j['emotion'],j['relation'],j['line']])
+            print('ここまでOK')
+            ch_show_list = list(ch_show_list)
+            print(ch_show_list)
             show_people_check.active = list(range(len(ch_now_list)))
+            print(len(show_people_check.labels))
         else:
             for j in relation_list:
                 if (j['line'] <= page_slider.value) and (j['line'] >= start_line) and ((j['source']==main_people)or(j['target']==main_people)): 
@@ -679,6 +684,7 @@ def make_matrix_sub(center):
             for i in range(len(ch_now_list)):
                 if ch_now_list[i] in ch_show_list:ch_show_index.append(i)
             show_people_check.active = ch_show_index
+        center_set = False
     else:
         ch_show_list=[]
 
@@ -690,13 +696,16 @@ def make_matrix_sub(center):
                 re_now_list.append([j['source'], j['target']])
                 re_emotion_list.append([j['emotion'],j['relation'],j['line']])
         
-   
+    
     #colors = ['#C71463', '#FB423F', '#3B8694', '#14ABC7', '#00FA96']
     #colors = ['#000000', '#003333', '#006666', '#009999', '#00CCCC'] 
     colors = ['#76487A', '#9F86BC', '#F9BF33', '#F1B0B2', '#CB5266'] 
     #colors=['#C41A1A','#C46868','#C4B7B7','#A9D9CD','#27D9AE']
 
-    
+    ch_show2 = ch_show_list
+    ch_show_list = []
+    for i in ch_now_list:
+        if i in ch_show2:ch_show_list.append(i)
     
     x_mem = ch_show_list * len(ch_show_list)
     y_mem = []
@@ -722,14 +731,14 @@ def make_matrix_sub(center):
 
     
     hm_source = ColumnDataSource(data = dict(x = x_mem, y = y_mem, colors = colors_list, relation = relation_indices))
-    toolList = ['pan', 'box_zoom', 'lasso_select', 'poly_select', 'tap', 'reset', 'save']
-    hm = figure(title = '関係図(⬜️)', x_range = ch_show_list, y_range=ch_show_list, width = 600, height = 600, tools = toolList)
-  
+    toolList = ['tap', 'save']
+    hm = figure( x_range = ch_show_list, y_range=ch_show_list[::-1], width = 600, height = 600, tools = toolList, x_axis_location="above")
+
     hm.xaxis.axis_label = '誰への'
     hm.yaxis.axis_label = '誰から'
     
     
-    hm.xaxis.major_label_orientation = math.pi/2
+    hm.xaxis.major_label_orientation = -math.pi/2
     heat_renderer = GlyphRenderer(data_source=hm_source)
     heat_renderer.glyph = Rect(x="x", y="y", width=1, height=1, fill_color="colors", line_color = 'black', line_alpha=0.3)
     #heat_renderer.selection_glyph = Rect(line_color='red')
@@ -779,26 +788,26 @@ def make_matrix_sub(center):
                 st_text.text = source + 'から'+target+'への関係一覧'
 
                 curdoc().clear()
-                u_lay = Row(reader, Column(color_bar,hm, st_text,st_table),Column(show_range_spinner, show_main_people, show_people_check))
+                u_lay = Row(reader, Column(hm, color_bar, st_text,st_table),Column(show_range_spinner, show_main_people, show_people_check))
                 lay = Column(menu, u_lay)
                 curdoc().add_root(lay)
 
             else:
                 curdoc().clear()
-                u_lay = Row(reader, Column(color_bar,hm), Column(show_range_spinner, show_main_people, show_people_check))
+                u_lay = Row(reader, Column(hm, color_bar), Column(show_range_spinner, show_main_people, show_people_check))
 
                 lay = Column(menu, u_lay)
                 curdoc().add_root(lay)
         else:
             curdoc().clear()
-            u_lay = Row(reader, Column(color_bar,hm), Column(show_range_spinner, show_main_people, show_people_check))
+            u_lay = Row(reader, Column(hm,color_bar), Column(show_range_spinner, show_main_people, show_people_check))
             lay = Column(menu, u_lay)
             curdoc().add_root(lay)
 
     hm.on_event(events.Tap, hmTap_callback)
 
     curdoc().clear()
-    u_lay = Row(reader, Column(color_bar,hm), Column(show_range_spinner, show_main_people, show_people_check))
+    u_lay = Row(reader, Column(hm,color_bar), Column(show_range_spinner, show_main_people, show_people_check))
 
     lay = Column(menu, u_lay)
     curdoc().add_root(lay)
@@ -809,7 +818,7 @@ def show_main_renderer(attr, old, new):
 
 def show_people_renderer(attr, old, new):
     global initial_set
-    if initial_set == False:
+    if initial_set == False and center_set == False:
         print('show_people_renderer')
         make_matrix_sub(False)
 
