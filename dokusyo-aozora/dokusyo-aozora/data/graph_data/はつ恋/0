@@ -1,0 +1,15 @@
+digraph {
+	graph [size="600,600"]
+	node [fixedsize=true height=120 width=360]
+	"セルゲイ・ニコラーエヴィチ"
+	node [fixedsize=true height=100 width=300]
+	"アンナ"
+	node [fixedsize=true height=100 width=300]
+	"主人"
+	node [fixedsize=true height=110 width=330]
+	"可愛らしいお嬢さん"
+	node [fixedsize=true height=110 width=330]
+	"乳母"
+	"セルゲイ・ニコラーエヴィチ" -> "可愛らしいお嬢さん" [label="18の時に恋した"]
+	"セルゲイ・ニコラーエヴィチ" -> "乳母" [label="６歳のの時に恋した"]
+}

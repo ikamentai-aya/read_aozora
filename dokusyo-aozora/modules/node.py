@@ -1,13 +1,13 @@
 from bokeh.plotting import figure
 from bokeh.models import (Ellipse, GraphRenderer, StaticLayoutProvider,MultiLine,EdgesAndLinkedNodes, Text,Arrow,Legend,LegendItem,
-                          HoverTool,NodesAndLinkedEdges,BoxSelectTool,TapTool,ColumnDataSource, Range1d, NormalHead, Patches)
-
+                          HoverTool,NodesAndLinkedEdges,BoxSelectTool,TapTool,ColumnDataSource, Range1d, NormalHead, Patches, RangeTool)
 
 #ノードリンク図の定義
 node_link = figure(title= '人物相関図', plot_height = 600, plot_width = 600)
 node_link.add_tools(HoverTool(tooltips=None), TapTool(), BoxSelectTool())
 node_link.xaxis.visible=False
 node_link.yaxis.visible=False
+
 
 graph = GraphRenderer()
     

@@ -9,17 +9,19 @@ import math
 import pathlib
 
 import numpy as np
-from bokeh.models import Paragraph,TextInput, PreText, Button, Slider, Dropdown, Select, Div, HoverTool, TapTool, BoxSelectTool, LinearColorMapper, BasicTicker, PrintfTickFormatter, ColorBar, CheckboxButtonGroup, Rect, CheckboxGroup, DataTable, TableColumn, GlyphRenderer, Spinner
+from bokeh.models import Paragraph,TextInput, PreText, Button, Slider, Dropdown, Select, Div, HoverTool, TapTool, BoxSelectTool, LinearColorMapper, BasicTicker, PrintfTickFormatter, ColorBar, CheckboxButtonGroup, Rect, CheckboxGroup, DataTable, TableColumn, GlyphRenderer, Spinner, GraphRenderer, Ellipse,MultiLine, NodesAndLinkedEdges, EdgesAndLinkedNodes,StaticLayoutProvider, Text
+from bokeh.models import Range1d
 from bokeh.plotting import figure, output_file, show, curdoc
 from bokeh.models import ColumnDataSource
 from bokeh.layouts import Column, Row
 from bokeh import events
 from class1 import Important, Group
-from modules.node import node_link, node_source, edge_source, source, provider
+#from modules.node import node_link, node_source, edge_source, source, provider
 from modules.matrix import hm
 
 from graphviz import Digraph #有向グラフ
 from xml.dom import minidom
+
 
 import MeCab
 import sys
@@ -42,6 +44,11 @@ global initial_set
 initial_set = False
 global center_set
 center_set = False
+
+#range_list = [0,0,0,0]
+#node_link.x_range = Range1d(range_list[0],range_list[1])
+#node_link.y_range = Range1d(range_list[2],range_list[3])
+
 
 #実際に読書をする部分の設定
 
@@ -288,12 +295,7 @@ def page_slider_renderer(attr, new, old):
     novel_dict[important.title].pageNumber = head
     p.text = important.textline[head]
 
-    if select_vis.value == '人物相関図':make_node_link()
-    if select_vis.value == '人物相関表': make_matrix()
-    if select_vis.value == '編集画面': 
-        person = [ch_source.data['people'][i] for i in ch_source.selected.indices]
-        novel_coloring(person, 'yellow')
-
+    show_vis()
     
     save()
 
@@ -333,7 +335,7 @@ bookmark.on_click(book_renderer)
 
 #関係を入力するフォーム
 
-input_info = Dropdown(label="情報追加", button_type="warning", menu=['登場人物追加', '関係性追加', 'グループ追加'], width=200)
+input_info = Dropdown(label="情報追加", button_type="warning", menu=['登場人物追加', '関係性追加'], width=200)
 
 chracter_input = TextInput(value="default",title="人物を入力してください", width = 200)
 decide_ch = Button(label='以上の人物を追加', button_type='success', width = 200)
@@ -435,11 +437,15 @@ select_vis = Select(title="可視化の選択", value="表示なし", options=['
 def select_vis_renderer(attr, old, new):
     
     if select_vis.value == '人物相関図':
+        '''
         curdoc().clear()
         u_lay = Row(reader, Column(color_bar,node_link))
+        '''
         make_node_link()
+        '''
         lay = Column(menu, u_lay)
         curdoc().add_root(lay)
+        '''
 
     elif select_vis.value == '人物相関表':
         make_matrix()
@@ -516,11 +522,8 @@ def import_graph_info(save_path):
             #re_emo_dict[j['emotion']-1].append([j['source'], j['target']])
             re_emo_dict[j['source']+j['target']] = j['emotion']-1
 
-    #colors=['#C41A1A','#C46868','#C4B7B7','#A9D9CD','#27D9AE']
+    
     colors = ['#76487A', '#9F86BC', '#F9BF33', '#F1B0B2', '#CB5266']
-    #colors = ['#000000', '#003333', '#006666', '#009999', '#00CCCC']
-    #colors = ['#C71463', '#FB423F', '#3B8694', '#14ABC7', '#00FA96']
- 
 
     node_indices = [] #ノードのインデックス
     x_list = []; y_list = [] #ノードのx,y座標
@@ -578,6 +581,71 @@ def import_graph_info(save_path):
         
     steps = [i/100. for i in range(100)]
     e_xs, e_ys = [], []
+    
+    ###
+
+    node_link = figure(title= '人物相関図', plot_height = 600, plot_width = 600)
+    node_link.add_tools(HoverTool(tooltips=None), TapTool(), BoxSelectTool())
+    node_link.xaxis.visible=False
+    node_link.yaxis.visible=False
+
+
+    graph = GraphRenderer()
+        
+    #graphのnode_rendererにデータ追加(Ellipse:楕円)
+    node_source = graph.node_renderer.data_source
+    node_source.data = dict(index = [], color = [], rx = [], ry = [])
+    graph.node_renderer.glyph = Ellipse(height='ry', width='rx', fill_color='color')
+        
+    #エッジの追加（startの列、endの列）
+    edge_source= graph.edge_renderer.data_source
+    edge_source.data = dict(start=[],end=[], index = [], color = [], emotion = [], xs = [], ys=[])
+
+    graph.edge_renderer.glyph = MultiLine(line_color='color', line_alpha=0.5, line_width=5)
+
+    #interactionの追加
+
+    graph.node_renderer.selection_glyph = Ellipse(height=10, width=15, fill_color='#F9BF33', fill_alpha=1.0)
+    graph.node_renderer.nonselection_glyph = Ellipse(fill_color='white', fill_alpha=1.0)
+    graph.node_renderer.hover_glyph = Ellipse(height=10, width=15, fill_color='#F9BF33',fill_alpha=1.0)
+    graph.edge_renderer.selection_glyph = MultiLine(line_alpha=1.0, line_width=8, line_color='color')
+    graph.edge_renderer.nonselection_glyph = MultiLine(line_alpha=0.7, line_width=5, line_color='gray')
+    graph.edge_renderer.hover_glyph = MultiLine(line_alpha=1.0, line_width=8, line_color='color')
+    graph.selection_policy = NodesAndLinkedEdges()
+    graph.inspection_policy = EdgesAndLinkedNodes()
+
+    #HoverToolの追加
+    node_hover_tool = HoverTool(tooltips=[("person","@index")],renderers=[graph.node_renderer])
+    edge_hover_tool = HoverTool(tooltips=[("start","@start"),("end","@end"),("index", "@index"), ('emotion', '@emotion')],renderers=[graph.edge_renderer])
+    node_link.add_tools(node_hover_tool)
+    node_link.add_tools(edge_hover_tool)
+
+    #graph_layout = dict(zip(node_source.data['index'], zip(node_source.data['x'], node_source.data['y'])))
+    graph.layout_provider = StaticLayoutProvider(graph_layout=dict())
+    provider = graph.layout_provider
+
+    node_link.renderers.append(graph)
+        
+    source = ColumnDataSource(data = dict(x=[], y=[], text=[]))
+    glyph = Text(x="x", y="y", text="text", text_color="black",text_font_size = "9px", text_align="center")
+    node_link.add_glyph(source, glyph)
+    ###
+
+    if not (x_list == []):
+        print('レイアウト範囲変更')
+        max_x = max(x_list)+1000; min_x = min(x_list)-1000
+        max_y = max(y_list)+1000; min_y = min(y_list)-1000
+        #global range_list
+        #range_list = [min_x, max_x, min_y, max_y]
+
+        node_link.x_range = Range1d(min_x, max_x)
+        node_link.y_range = Range1d(min_y, max_y)
+        #range_rool.x_range = Range1d(min_x, max_x)
+        #range_rool.y_range = Range1d(min_y, max_y)
+        print(node_link.x_range)
+        
+
+
 
     graph_layout = dict(zip(node_indices, zip(x_list, y_list))) #nodeのindexとx,y座標が対応する辞書
     steps = [i/100. for i in range(100)]
@@ -590,6 +658,7 @@ def import_graph_info(save_path):
         else:
             e_xs.append(bezier(sx, ex, 0, steps, sy-ey))
             e_ys.append(bezier(sy, ey, 0, steps, 0))
+
 
     
     t_xs = []
@@ -619,6 +688,10 @@ def import_graph_info(save_path):
     source.data = dict(x=x_axis, y=y_list, text=node_indices)
 
     os.remove(save_path+'.svg')
+    curdoc().clear()
+    u_lay = Row(reader, Column(color_bar,node_link))
+    lay = Column(menu, u_lay)
+    curdoc().add_root(lay)
 
 
 
@@ -633,8 +706,9 @@ color_bar.rect(x= ['嫌い','好きじゃない','どっちでもない','好き
 
 
 #マトリックス図を作成する関数
-def make_matrix_sub(center):
+def make_matrix_sub(center, check):
     #p.text = important.textline[page_slider.value]
+    print(check)
     line_number = page_slider.value 
 
     ch_now_list = show_people_check.labels
@@ -651,9 +725,13 @@ def make_matrix_sub(center):
     re_emotion_list = []
     start_line = max(page_slider.value - show_range_spinner.value, 0)#ここからの関係を写す
 
-    if center == True:
+    main_people = show_main_people.value
+    if check == False and main_people == 'none':
+        show_people_check.active = list(range(len(ch_now_list)))
+
+
+    if center == True:#中心人物が選択されている時
         center_set = True
-        main_people = show_main_people.value
         if main_people == 'none':
             print('noneが選ばれました')
             ch_show_list =set()
@@ -814,19 +892,19 @@ def make_matrix_sub(center):
 
 def show_main_renderer(attr, old, new):
     print('show_main_renderer')
-    make_matrix_sub(True)
+    make_matrix_sub(True, False)
 
 def show_people_renderer(attr, old, new):
     global initial_set
     if initial_set == False and center_set == False:
         print('show_people_renderer')
-        make_matrix_sub(False)
+        make_matrix_sub(False, True)
 
 def show_range_renderer(attr, old, new):
     global initial_set
     if initial_set == False:
         print('show_range_renderer')
-        make_matrix_sub(False)
+        make_matrix_sub(False, False)
 
 show_main_people.on_change('value', show_main_renderer)
 show_people_check.on_change('active', show_people_renderer)
@@ -850,7 +928,7 @@ def make_matrix():
     show_main_people.options = ['none']+ ch_now_list
     show_people_check.labels = ch_now_list 
 
-    make_matrix_sub(False)
+    make_matrix_sub(False, False)
 
     
 #キャラクターを削除する関数
@@ -1139,8 +1217,8 @@ def auto_character():
     ginza_set = set()
     for i in people_ca:
         if not(i in peoples):ginza_set.add(i)
-
     """
+
     doc = nlp(use_text)
     ginza_only_set=set()
     print(doc.ents)
@@ -1161,6 +1239,8 @@ def auto_character():
     menu = Row(lay1,lay2, book_lay, jump_mark, input_info, import_down)
     lay = Column(menu, reader)
     curdoc().add_root(lay)
+
+    
     novel_coloring(list(ginza_set), 'palegreen')
 
 #wordsに含まれた単語をcolorで色をつける
@@ -1191,13 +1271,17 @@ def add_ch_renderer():
             novel_dict[important.title].people_list.append({'people':new_ch[i], 'line':page_slider.value})
             important.people_list=novel_dict[important.title].people_list 
     save()
-    curdoc().clear()
-    lay2 = Column(Row(forward_button, backward_button), auto_ch)
-    menu = Row(lay1,lay2, bookmark, jump_mark, input_info, import_down)
-    lay = Column(menu, reader)
-    curdoc().add_root(lay)
 
     p.text = important.textline[page_slider.value]
+    show_vis()
+    
+def show_vis():
+    if select_vis.value == '人物相関図':make_node_link()
+    if select_vis.value == '人物相関表': make_matrix()
+    if select_vis.value == '編集画面': 
+        person = [ch_source.data['people'][i] for i in ch_source.selected.indices]
+        novel_coloring(person, 'yellow')
+
 
 add_ch.on_click(add_ch_renderer)
         
