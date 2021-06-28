@@ -1,0 +1,29 @@
+digraph {
+	graph [size="600,600"]
+	node [fixedsize=true height=100 width=300]
+	"上"
+	node [fixedsize=true height=100 width=300]
+	"色"
+	node [fixedsize=true height=100 width=300]
+	"宿"
+	node [fixedsize=true height=100 width=300]
+	"知り合い"
+	node [fixedsize=true height=100 width=300]
+	"母"
+	node [fixedsize=true height=100 width=300]
+	"親"
+	node [fixedsize=true height=100 width=300]
+	"家"
+	node [fixedsize=true height=100 width=300]
+	"書生"
+	node [fixedsize=true height=100 width=300]
+	"女"
+	node [fixedsize=true height=100 width=300]
+	"男"
+	node [fixedsize=true height=100 width=300]
+	"客"
+	node [fixedsize=true height=100 width=300]
+	"先生"
+	node [fixedsize=true height=100 width=300]
+	"友達"
+}

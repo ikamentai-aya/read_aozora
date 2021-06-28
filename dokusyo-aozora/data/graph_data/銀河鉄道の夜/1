@@ -4,4 +4,8 @@ digraph {
 	"ジョバンニ"
 	node [fixedsize=true height=100 width=300]
 	"先生"
+	node [fixedsize=true height=100 width=300]
+	"博士"
+	node [fixedsize=true height=100 width=300]
+	"カムパネルラ"
 }

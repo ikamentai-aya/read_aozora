@@ -16,10 +16,8 @@ from bokeh.models import ColumnDataSource
 from bokeh.layouts import Column, Row
 from bokeh import events
 
-
 from class1 import Important, Group
 from modules.auto import auto_all
-from modules.reader import reset_button, p, title, author
 #from modules.node import node_link, node_source, edge_source, source, provider
 from modules.matrix import hm
 
@@ -33,10 +31,8 @@ import spacy
 from spacy import displacy
 nlp = spacy.load('ja_ginza')
 
-#それに対応する読書情報(class Important)を格納する辞書
-
-#本ごとの読書情報を格納するクラス
-
+reset_button = Button(label='', button_type='success', width=200)
+   
 #今読んでいる本の情報をいれる
 important = Important('','',[],[],800,0,[],[],[],[],'', dict())
 gr_path = 'dokusyo-aozora/data/graph_data/'
@@ -46,6 +42,12 @@ global initial_set
 initial_set = False
 global center_set
 center_set = False
+
+#実際に読書をする部分の設定
+
+p = Div(text='',width=600, height=900) #本文
+title = Div(text='', width =600, height = 15) #本のタイトル表示
+author = Div(text='', width =600, height = 50) #本の作者表示
 
 #読む本を選ぶためのwidget
 import_down = Dropdown(label="小説の選択", button_type="warning", menu=['ダウンロード済み', '新たにダウンロード'], width=200)

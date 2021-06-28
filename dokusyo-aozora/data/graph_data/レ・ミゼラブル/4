@@ -1,7 +1,5 @@
 digraph {
 	graph [size="600,600"]
 	node [fixedsize=true height=100 width=300]
-	"ジョバンニ"
-	node [fixedsize=true height=100 width=300]
-	"先生"
+	"ミリエル"
 }

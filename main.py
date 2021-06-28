@@ -25,8 +25,6 @@ import spacy
 from spacy import displacy
 nlp = spacy.load('ja_ginza')
 
-
-
 #それに対応する読書情報(class Important)を格納する辞書
 
 #本ごとの読書情報を格納するクラス
@@ -1041,6 +1039,8 @@ def make_table():
 
 auto_ch = Button(label='登場人物の候補を抽出', button_type='success', width=200)
 LABELS = ["Option 1", "Option 2", "Option 3"]
+
+all_auto_ch = Button(label='自動情報抽出', button_type='success', width=400)
 
 checkbox_group = CheckboxGroup(labels=[], active=[0, 1], width = 200)
 add_ch = Button(label='追加', button_type='success', width = 70)
