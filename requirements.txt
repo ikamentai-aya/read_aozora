@@ -56,7 +56,7 @@ jupyterlab-pygments==0.1.2
 jupyterlab-server==2.6.0
 MarkupSafe==2.0.1
 matplotlib-inline==0.1.2
-mecab-python3
+mecab==0.996.3
 mistune==0.8.4
 murmurhash==1.0.5
 nbclassic==0.3.1
@@ -118,7 +118,7 @@ testpath==0.5.0
 thinc==7.4.5
 threadpoolctl==2.1.0
 tika==1.24
-torch==0.4.1
+torch==1.9.0
 tornado==6.1
 tqdm==4.61.1
 traitlets==5.0.5
