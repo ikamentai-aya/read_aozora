@@ -44,7 +44,6 @@ terminado==0.8.3
 testpath==0.4.4
 thinc==7.4.3
 tornado==6.0.4
-http://download.pytorch.org/whl/cpu/torch-0.4.1-cp36-cp36m-linux_x86_64.whl
 torchvision==0.2.1
 tqdm==4.46.1
 traitlets==4.3.3
