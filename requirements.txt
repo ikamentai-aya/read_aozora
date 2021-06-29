@@ -4,7 +4,7 @@ graphviz==0.16
 ja-ginza==4.0.0
 matplotlib-inline==0.1.2
 mecab-python3
-nltk==3.6.2
+nltk>=3.5
 numpy==1.21.0
 pickleshare==0.7.5
 plac==1.1.3
