@@ -31,7 +31,7 @@ nlp = spacy.load('ja_ginza')
 
 #今読んでいる本の情報をいれる
 important = Important('','',[],[],800,0,[],[],[],'', dict())
-gr_path = 'dokusyo-aozora/data/graph_data/'
+gr_path = 'read-aozora/data/graph_data/'
 ch_frequency_dict = dict()
 people_candidate = []
 
@@ -155,7 +155,7 @@ def convert(download_text):
 #url_getのsub　routin
 def download(url):
     # データファイルをダウンロードする
-    zip_file = 'dokusyo-aozora/data/aozora/' + re.split(r'/', url)[-1]
+    zip_file = 'read-aozora/data/aozora/' + re.split(r'/', url)[-1]
     
     urllib.request.urlretrieve(url, zip_file)
     print('ここまで完了')
@@ -182,13 +182,13 @@ def download(url):
 
     #ファイルの移動
     paths = new_path.split('/')[-1]
-    check_path = 'dokusyo-aozora/data/aozora/' + paths
+    check_path = 'read-aozora/data/aozora/' + paths
     
     #if not os.path.exists(check_path):
     if not (check_path in already_novels):
         print('Download URL')
         print('URL:',url)
-        shutil.move(new_path, 'dokusyo-aozora/data/aozora')
+        shutil.move(new_path, 'read-aozora/data/aozora')
         shutil.rmtree(dir)
         return check_path
         
@@ -387,7 +387,7 @@ input_info.on_click(input_renderer)
 
 #必要な情報を保存する
 def save():
-    with open('dokusyo-aozora/data/novel_dict.binaryfile', 'wb') as sp:
+    with open('read-aozora/data/novel_dict.binaryfile', 'wb') as sp:
         pickle.dump([novel_dict,novel_list, already_novels] , sp)
 
 
@@ -1138,9 +1138,9 @@ auto_ch.on_click(auto_character)
 
 
 ####システムを動かす上で格納したい情報を取得する####
-if os.path.exists('dokusyo-aozora/data/novel_dict.binaryfile'):
+if os.path.exists('read-aozora/data/novel_dict.binaryfile'):
     print('既にデータがあるのでロードします')
-    with open('dokusyo-aozora/data/novel_dict.binaryfile', 'rb') as sp:
+    with open('read-aozora/data/novel_dict.binaryfile', 'rb') as sp:
         novel = pickle.load(sp)
     novel_dict = novel[0]
     novel_list = novel[1]
@@ -1152,7 +1152,7 @@ else:
     novel_dict = {} #本のタイトルと
     already_novels = []
 
-with open('dokusyo-aozora/data/people_candidate.txt') as f:
+with open('read-aozora/data/people_candidate.txt') as f:
     people_candidate_txt = f.read()
 
 people_candidate = people_candidate_txt.split('\n')
@@ -1174,7 +1174,7 @@ print('レイアウト生成完了')
 for i in novel_dict:
     path = novel_dict[i].graph_path
     path = path.replace('readerapp/', '')
-    novel_dict[i].graph_path = 'dokusyo-aozora/'+path
+    novel_dict[i].graph_path = 'read-aozora/'+path
     save()
 """
 """
