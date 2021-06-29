@@ -2,7 +2,7 @@ bokeh==2.3.2
 ginza==4.0.6
 graphviz==0.16
 googletrans
-ja-ginza==4.0.0
+#ja-ginza==4.0.0
 matplotlib-inline==0.1.2
 mecab-python3
 nltk>=3.5
