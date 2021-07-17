@@ -8,95 +8,204 @@ import shutil
 import math
 
 import numpy as np
-from bokeh.models import Paragraph,TextInput, PreText, Button, Slider, Dropdown, Select, Div, HoverTool, TapTool, BoxSelectTool, LinearColorMapper, BasicTicker, PrintfTickFormatter, ColorBar, CheckboxButtonGroup, Rect, CheckboxGroup, DataTable, TableColumn, GlyphRenderer, Spinner, GraphRenderer, Ellipse,MultiLine, NodesAndLinkedEdges, EdgesAndLinkedNodes,StaticLayoutProvider, Text
-from bokeh.models import Range1d
-from bokeh.plotting import figure, output_file, show, curdoc
-from bokeh.models import ColumnDataSource
+from bokeh.models import *
+from bokeh.plotting import figure, curdoc
 from bokeh.layouts import Column, Row
 from bokeh import events
 
-
+####他のサブファイルで定義したものの読み込み#####
 from class1 import Important, Group
 from modules.auto import auto_all
-from modules.reader import reset_button, p, title, author
+from modules.reader import reset_button, p, title, author, convert
 #from modules.node import node_link, node_source, edge_source, source, provider
+from modules.node import make_graphvis
 from modules.matrix import hm
+from modules.arrange import ch_source, ch_columns, ch_table, re_source, re_columns, re_table
+############################################
 
+####グラフ描画に必要なライブラリ##########
 from graphviz import Digraph #有向グラフ
 from xml.dom import minidom
+#####################################
 
-
-import MeCab
+####自然言語処理に必要なライブラリ#######
 import sys
 import spacy
 from spacy import displacy
 nlp = spacy.load('ja_ginza')
+##############################
 
-#それに対応する読書情報(class Important)を格納する辞書
 
-#本ごとの読書情報を格納するクラス
-
-#今読んでいる本の情報をいれる
+####システム内で使うデータ構造の定義#######
 important = Important('','',[],[],800,0,[],[],[],[],'', dict())
 gr_path = 'read-aozora/data/graph_data/'
-ch_frequency_dict = dict()
-people_candidate = []
+ch_frequency_dict = dict() #登場人物の出現頻度の辞書
+people_candidate = [] #自動抽出ででた登場人物のリスト
 global initial_set
 initial_set = False
 global center_set
 center_set = False
+novel_dict = dict()
+novel_list = []
+already_novels = []
+#####################################
 
-#読む本を選ぶためのwidget
-import_down = Dropdown(label="小説の選択", button_type="warning", menu=['ダウンロード済み', '新たにダウンロード'], width=200)
+####小説の本文####
+novel = Column(title, author,p, name = 'novel')
+
+
+####本を読むための機能#####   
+forward = Button(label='▷', button_type='success', width=100, name='forward')
+backward = Button(label='◁', button_type='success', width=100, name='backward')
+page_slider = Slider(start=0, end=len(important.textline)+1, value=1, step=1, title="現在の段落", width=200, name = 'page_slider')
+########################
+
+####読む本を選ぶためのwidget#####
+import_down = Dropdown(label="小説の選択", button_type="warning", menu=['none','ダウンロード済み', '新たにダウンロード'], width=200)
 already_import = Select(title="小説", value="none", options=['none'], width=200)
 text_input= TextInput(value="default",title="URLを入力してください:", width=200) #新たにダウンロードする本のURLを打ち込むTextInput
 finish_text = PreText(text='', width=100, height=20)
+novel_decide = Button(label='小説を追加', button_type='success', width=100)
+select_book = Column(children = [import_down ], name = 'select_book')
 
-#新たに読む本を選ぶためのボタン、ダウンロード済みから選ぶor新たにダウンロードするかの選択
 def import_renderer(event):
-    curdoc().clear()
-    if event.item == 'ダウンロード済み':
-        lay_novel = Column(import_down, already_import)
-    else:
-        lay_novel = Column(import_down, text_input)
+    global select_book
     
-    menu = Row(lay1,lay2, bookmark, jump_mark,  input_info, lay_novel, all_auto_ch)
-    reader = Column(title, author, p)
-    lay = Column(menu, reader)
+    if event.item == 'ダウンロード済み':
+        #select_book = Column(import_down, already_import, name='select_book')
+        select_book.children = [import_down, already_import]
 
-    curdoc().add_root(lay)
-        
-import_down.on_click(import_renderer)
+    elif event.item == '新たにダウンロード':
+        select_book.children = [import_down, text_input, novel_decide, finish_text]
+
+    else:
+        select_book.children = [import_down]
+
+#########
+
+####しおりをつける機能####
+bookmark = Button(label='しおり', button_type='success', width=100, name ='bookmark')
+jump_mark = Dropdown(label="しおりに飛ぶ", button_type="warning", menu=[], width = 200, name = 'jump_mark')
+
+####情報追加#####
+input_select = Dropdown(label="情報追加", button_type="warning", menu=['none','登場人物追加', '関係性追加'], width=200)
+info_input = Column(children = [input_select], name = 'info_input')
+
+def input_select_renderer(event):
+    global info_input
+    
+    if event.item == '登場人物追加':
+        info_input.children = [input_select, chracter_input, decide_ch]
+
+    elif event.item == '関係性追加':
+        info_input.children = [input_select, source_input, target_input, relation_input, emotion_input, decide_re]
+    else:
+        info_input.children = [input_select]
+    
+
+input_select.on_click(input_select_renderer)
 
 
-#読む本を選択するための関数
+####登場人物の追加####
+chracter_input = TextInput(value="default",title="人物を入力してください", width = 200)
+decide_ch = Button(label='以上の人物を追加', button_type='success', width = 200)
+
+
+#####関係の追加#####
+source_input = Select(title='誰から',value='none',options=['none'], width=200)
+target_input = Select(title='誰への',value='none',options=['none'], width=200)
+relation_input = TextInput(value='default',title='どんな関係', width=200)
+emotion_input = Slider(start=1, end=5, value=1, step=1, title="好意的か（5:好意的、1:否定的）", width=200)
+decide_re = Button(label='以上の関係を追加', button_type='success', width=200)
+
+####可視化の選択####
+select_vis = Select(title="可視化の選択", value="表示なし", options=['表示なし', '人物相関図', '人物相関表','編集画面'], width=200, name="select_vis")
+
+####登場人物の自動抽出####
+auto_ch_button = Button(label='登場人物の候補を抽出', button_type='success', width=200)
+LABELS = ["Option 1", "Option 2", "Option 3"]
+checkbox_group = CheckboxGroup(labels=[], active=[0, 1], width = 200)
+add_ch = Button(label='追加', button_type='success', width = 70)
+auto_ch = Column(auto_ch_button, name = 'auto_ch')
+
+####可視化のタブ等####
+vue = Column(children=[], name = 'vue')
+colors = ['#76487A', '#9F86BC', '#F9BF33', '#F1B0B2', '#CB5266']
+color_bar = figure(title = '', x_range = ['嫌い','好きじゃない','どっちでもない','好き','大好き'], y_range=['1'], width = 600, height = 70, tools = [])
+color_bar.rect(x= ['嫌い','好きじゃない','どっちでもない','好き','大好き'], y=['1','1','1','1','1'], width=1, height=1,line_color=None, fill_color=colors)
+
+####人物相関図のツール#####
+show_range_spinner = Spinner(title="直近何ページの関係を表しますか", low=1, high=1, step=1, value=1, width=70)
+show_main_people = Select(title="この人を中心とする", value="none", options=['none'], width=200)
+show_people_check = CheckboxGroup(labels=[], active=[])
+###############
+
+####情報編集画面のツール####
+frequency_color = ['white','#dcf8dc','#b8f1b8','#95ea95','#4edc4e','#23b123','#1d8d1d','#156a15']
+frequency_count = [[0],[1,2],[3,4],[5,6],[7,8],[9,10],[11,12]]
+ch_delete_button = Button(label='消去', button_type='success', width =100)
+ch_edit_button = Button(label='変更を保存', button_type='success', width=100)
+ch_plus_button = Button(label='+', button_type='success', width=50, background='white')
+ch_minus_button = Button(label='-', button_type='success', width=50, background='white')
+re_delete_button = Button(label='消去', button_type='success', width =100)
+re_edit_button = Button(label='変更を保存', button_type='success', width=100)
+re_plus_button = Button(label='+', button_type='success', width=50, background='white')
+re_minus_button = Button(label='-', button_type='success', width=50, background='white')
+
+####登場人物の自動抽出に関連するツール####
+auto_ch_button = Button(label='登場人物の候補を抽出', button_type='success', width=200)
+LABELS = ["Option 1", "Option 2", "Option 3"]
+checkbox_group = CheckboxGroup(labels=[], active=[0, 1], width = 200)
+add_ch = Button(label='追加', button_type='success', width = 70)
+auto_ch = Row(children = [auto_ch_button], name = 'auto_ch')
+cancel_button = Button(label='キャンセル', button_type='success', width = 70)
+
+####自動情報抽出####
+auto_button = Button(label='自動情報抽出', button_type='success', width=200)
+auto_text = PreText(text='', width=100, height=20)
+all_auto = Column(auto_button, auto_text, name='all_auto')
+
+
+####システムの初期動作関数#####
+def start():
+
+    global novel_dict, novel_list, people_candidate, already_import, already_novels
+
+    ####システムを動かす上で格納したい情報を取得する####
+    if os.path.exists('read-aozora/data/novel_dict.binaryfile'):
+        print('既にデータがあるのでロードします')
+        with open('read-aozora/data/novel_dict.binaryfile', 'rb') as sp:
+            novel = pickle.load(sp)
+        novel_dict = novel[0]
+        novel_list = novel[1]
+        already_novels = novel[2]
+        already_import.options = novel_list
+    else:    
+        print('新たにデータを生成します')
+        novel_list = ['none'] #ダウンロード済みのタイトルのリスト
+        novel_dict = {} #本のタイトルと
+        already_novels = []
+
+    with open('read-aozora/data/people_candidate.txt') as f:
+        people_candidate_txt = f.read()
+
+    people_candidate = people_candidate_txt.split('\n')
+    people_candidate = people_candidate[:-2]
+
+####小説の読み込み関数####
 def already_import_renderer(attr, old, new):
     if not (already_import.value == 'none'):
         
-        print('already_import_renderer')
-        
-        global initial_set
-        initial_set=True
+        global novel_dict, important, new_title, auto_text
+        #global initial_set
+        #initial_set=True
         #importantの書き換え
         new_title = already_import.value
-        important.title = novel_dict[new_title].title
-        important.author = novel_dict[new_title].author
-        important.textline = novel_dict[new_title].textline
-        important.pageNumber = novel_dict[new_title].pageNumber
-        important.bookMark = novel_dict[new_title].bookMark
-        important.people_list = novel_dict[new_title].people_list
-        important.relation_list = novel_dict[new_title].relation_list
-        important.row_text = novel_dict[new_title].row_text
-        important.group_list = novel_dict[new_title].group_list
+        important = novel_dict[new_title]
         ch_frequency_dict = novel_dict[new_title].ch_freq
+        ch_source.selected.indices = []
 
-        print(important.people_list)
         auto_text.text = ""
-        
-        """
-        novel_dict[new_title].people_list = []
-        novel_dict[new_title].relation_list = []
-        """
         
         title.text = "<style> .info{font-size:15px;} </style>"+'<p class = "info">'+important.title+"<p/>"
         author.text = '<p class = "info">'+important.author+"<p/>"
@@ -104,6 +213,7 @@ def already_import_renderer(attr, old, new):
         page_slider.end = len(important.textline)
         page_slider.value = important.pageNumber
         
+        """
         #matrixの調整
         show_range_spinner.high = len(important.textline)
         show_range_spinner.value = len(important.textline)
@@ -113,7 +223,7 @@ def already_import_renderer(attr, old, new):
         
         show_people_check.labels = ch_now_list
         show_people_check.active = list(range(len(ch_now_list)))
-    
+        """
         #ブックマークの更新
         menu = []
         for i in novel_dict[important.title].bookMark:
@@ -124,51 +234,10 @@ def already_import_renderer(attr, old, new):
         
         jump_mark.menu = menu
         p.text = important.textline[important.pageNumber]
-        save()
 
-        if select_vis.value == '表示なし': 
-            curdoc().clear()
-            lay1 = Column(page_slider, select_vis)
-            lay2 = Column(Row(forward_button, backward_button), auto_ch)
-            menu = Row(lay1,lay2, bookmark, jump_mark, input_info, import_down,all_auto_ch)
-            reader = Column(title, author, p)
-            lay = Column(menu, reader)
-            curdoc().add_root(lay)
-
-        print('end')
-        initial_set=False
-
-        if select_vis.value == '人物相関図':make_node_link()
-        if select_vis.value == '人物相関表': make_matrix()
-        if select_vis.value == '編集画面':make_table()
-
-    
-already_import.on_change('value', already_import_renderer)
-
-#url_getのsub routin
-def convert(download_text):
-    if download_text == 0:
-        return 0,0,0
-    else:    
-        binarydata = open(download_text, 'rb').read()
-        text = binarydata.decode('shift_jis')
- 
-        # ルビ、注釈などの除去
-
-        honbun = re.split(r'\-{5,}', text)[2]
-        title_author = re.split(r'\-{5,}', text)[0]
-        title = title_author.split('\n')[0]
-        author = title_author.split('\n')[1]
-
-        honbun = re.split(r'底本：', honbun)[0]
-        honbun = re.sub(r'《.+?》', '', honbun)
-        honbun = re.sub(r'［＃.+?］', '', honbun)
-        honbun = re.sub(r'｜', '', honbun)
-        honbun = honbun.strip()
-
-        os.remove(download_text)
-    
-        return title, author, honbun
+        #save()
+        show_vis()
+        
 
 #url_getのsub　routin
 def download(url):
@@ -215,7 +284,7 @@ def download(url):
         return 0
 
 #小説のURLを入力されたら、小説をダウンロードして、読めるように整形する関数
-def url_get(attr, old, new):
+def url_get(event):
     url = text_input.value
     download_text = download(url) #入っているファイルのパスを返す
     title, author, text = convert(download_text)
@@ -247,45 +316,19 @@ def url_get(attr, old, new):
         novel_dict[title] = Important(title, author, lines, row_lines,800, 0, [], [], [], [], g_path, dict())
         novel_list.append(title)
         already_import.options = novel_list
-        save()
+        #save()
         finish_text.text = 'ダウンロードが完了しました'
 
-    
-    curdoc().clear()
-    lay_novel = Column(import_down, text_input, finish_text)
-
-    menu = Row(lay1,lay2,bookmark, jump_mark, input_info, lay_novel,all_auto_ch)
-    #reader = Column(title, author, p)
-    lay = Column(menu, reader)
-
-    curdoc().add_root(lay)
-
-
-text_input.on_change('value', url_get)
-
-
-#ページをスクロールするボタン
-
+####ページの移動関数####
 def forward_renderer():
     head = important.pageNumber + 1
     if head <= page_slider.end:
         page_slider.value = head
 
-
 def backward_renderer():
     head = important.pageNumber -1
     if head >= 0:
         page_slider.value = head
- 
-    
-    
-forward_button = Button(label='▷', button_type='success', width=100)
-backward_button = Button(label='◁', button_type='success', width=100)
-
-forward_button.on_click(forward_renderer)
-backward_button.on_click(backward_renderer)
-
-#sliderの実装
 
 def page_slider_renderer(attr, new, old):
 
@@ -295,51 +338,13 @@ def page_slider_renderer(attr, new, old):
     p.text = important.textline[head]
 
     show_vis()
-    
-    save()
+    #save()
 
-page_slider = Slider(start=0, end=len(important.textline)+1, value=1, step=1, title="現在の段落", width=200)
-page_slider.on_change('value', page_slider_renderer)
+#########
 
-#しおりに飛ぶ
-jump_mark = Dropdown(label="しおりに飛ぶ", button_type="warning", menu=[], width = 200)
-def jump_renderer(event):
-    spl = event.item.split(' ')
-    head = int(spl[0])
-    page_slider.value = head
-    
-jump_mark.on_click(jump_renderer)
+####情報の追加####
 
-
-#しおりの追加
-bookmark = Button(label='しおり', button_type='success', width=100)
-def book_renderer():
-    if (page_slider.value in important.bookMark) == False:
-        novel_dict[important.title].bookMark.append(page_slider.value)
-        important.bookMark = novel_dict[important.title].bookMark
-
-        menu = []
-        for i in novel_dict[important.title].bookMark:
-            text = str(i)+' '
-            for j in range(min([len(important.row_text[i]), 30])):text += important.row_text[i][j]
-            text += '...'
-            menu.append(text)
-
-        
-        jump_mark.menu = menu
-        save()
-
-    
-bookmark.on_click(book_renderer)
-
-#関係を入力するフォーム
-
-input_info = Dropdown(label="情報追加", button_type="warning", menu=['登場人物追加', '関係性追加'], width=200)
-
-chracter_input = TextInput(value="default",title="人物を入力してください", width = 200)
-decide_ch = Button(label='以上の人物を追加', button_type='success', width = 200)
-
-#入力された情報を新しく登場人物としてデータに保存
+#新しく登場人物としてデータに保存
 def chracter_renderer():
     
     ch_list = []
@@ -348,13 +353,10 @@ def chracter_renderer():
     if not (chracter_input.value in ch_list):
         novel_dict[important.title].people_list.append({'people':chracter_input.value, 'line':page_slider.value})
         important.people_list=novel_dict[important.title].people_list 
-        save()
-        if select_vis.value == '人物相関図':make_node_link()
-        if select_vis.value == '人物相関表': make_matrix()
+        #save()
+        show_vis()
 
-decide_ch.on_click(chracter_renderer)
-
-#入力された情報を新しく関係性としてデータに保存
+#関係性としてデータに保存
 def relation_renderer():
     
     new_dict = {'source':source_input.value, 'target':target_input.value, 'line':page_slider.value, 'emotion':emotion_input.value, 'relation':relation_input.value}
@@ -362,143 +364,37 @@ def relation_renderer():
 
     #novel_dict[important.title].relation_list.append({'source':source_input.value, 'target':target_input.value, 'line':important['headNumber'], 'emotion':emotion_input.value, 'relation':relation_input.value})
     important.relation_list = novel_dict[important.title].relation_list
-    save()
-    if select_vis.value == '人物相関図':make_node_link()
-    if select_vis.value == '人物相関表': make_matrix()
+    #save()
+    show_vis()
 
-source_input = Select(title='誰から',value='none',options=['none'], width=200)
-target_input = Select(title='誰への',value='none',options=['none'], width=200)
-relation_input = TextInput(value='default',title='どんな関係', width=200)
-emotion_input = Slider(start=1, end=5, value=1, step=1, title="好意的か（5:好意的、1:否定的）", width=200)
-decide_button = Button(label='以上の関係を追加', button_type='success', width=200)
-decide_button.on_click(relation_renderer)
+##################3
 
-#入力された情報を新しくグループとしてデータに保存
-def group_renderer():
-    member = []
-    labels = member_input.labels
-    for i in member_input.active:member.append(labels[i])
-    group_name = group_name_input.value
-    new_group = Group(group_name,member)
-    novel_dict[important.title].group_list.append(new_group)
-    important.group_list = novel_dict[important.title].group_list
-    save()
-    
-
-group_name_input = TextInput(value='default',title='グループの名前', width=200)
-member_input = CheckboxGroup(labels=[], active=[])
-decide_group = Button(label='以上のグループを追加', button_type='success', width=200)
-decide_group.on_click(group_renderer)
-
-    
-#これから登場人物を追加するのか、関係性を追加するのか決定する
-def input_renderer(event):
-    curdoc().clear()
-
-    if event.item == '登場人物追加':
-        lay_input = Column(input_info, chracter_input, decide_ch)
-    
-    if event.item == '関係性追加':
-        people = ['none']
-        for i in important.people_list:
-            if i['line'] <= page_slider.value:people.append(i['people'])
-        source_input.options=people
-        target_input.options=people
-        lay_input = Column(input_info, source_input, target_input, relation_input, emotion_input, decide_button)
-
-    if event.item == 'グループ追加':
-        members = []
-        for i in important.people_list:
-            if i['line'] <= page_slider.value: members.append(i['people'])
-        member_input.labels = members
-        member_input.active = []
-        lay_input = Column(input_info, group_name_input, member_input, decide_group)
-
-
-    menu = Row(lay1,lay2,bookmark, jump_mark, lay_input, import_down, all_auto_ch)
-    reader = Column(title, author, p)
-    lay = Column(menu, reader)
-    curdoc().add_root(lay) 
-    save()       
-    
-input_info.on_click(input_renderer)
-
-#必要な情報を保存する
-def save():
-    with open('read-aozora/data/novel_dict.binaryfile', 'wb') as sp:
-        pickle.dump([novel_dict,novel_list, already_novels] , sp)
-
-
-
-####可視化の選択など####
-select_vis = Select(title="可視化の選択", value="表示なし", options=['表示なし', '人物相関図', '人物相関表','編集画面'], width=200)
-
+####可視化の定義#####
 def select_vis_renderer(attr, old, new):
+    show_vis()
     
-    if select_vis.value == '人物相関図':
+
+def show_vis():
+
+    if select_vis.value == '表示なし':
+        vue.children = []
+
+    elif select_vis.value =='人物相関図':
         make_node_link()
 
     elif select_vis.value == '人物相関表':
         make_matrix()
 
-    elif select_vis.value == '編集画面':
-        make_table()
     else:
-        curdoc().clear()
-        u_lay = reader
-        lay = Column(menu, u_lay)
-        curdoc().add_root(lay)
+        make_arrange()
 
-
-select_vis.on_change('value',select_vis_renderer)
-
+####人物相関表図の作成####
 #ノードリンク図を作成する関数
 def make_node_link():
     p.text = important.textline[page_slider.value]
-    save_path = make_graphvis(page_slider.value)
+    save_path = make_graphvis(page_slider.value, important.people_list, important.relation_list, novel_dict[important.title].graph_path)
     import_graph_info(save_path)
     
-#情報をgraphvisに入れてグラフを作成する
-def make_graphvis(line_number):
-
-    graph = Digraph(format='svg',
-                    graph_attr={'size':"600,600"})
- 
-
-    graph.engine= 'sfdp'
-
-    ch_list = important.people_list
-    new_ch_list = [] #現在までに出てきている人のリスト
-    for i in ch_list:
-        if i['line'] <= line_number:
-            new_ch_list.append(i['people'])
-            #graph.node(i['people'])
-
-    new_ch_size = dict()
-    for i in new_ch_list:new_ch_size[i] = 100
-
-
-    re_list = important.relation_list
-    new_re_dict = dict()
-    for j in re_list:
-        if j['line'] <= line_number:
-            new_re_dict[j['source']+','+j['target']] = j['relation']
-            new_ch_size[j['source']] += 10
-            new_ch_size[j['target']] += 10
-    
-    for i in new_ch_list:
-        graph.attr('node', fixedsize='true', width=str(new_ch_size[i]*3), height = str(new_ch_size[i]))
-        graph.node(i)
-
-
-    for j in new_re_dict:
-        j_list = j.split(',')
-        graph.edge(j_list[0],j_list[1],new_re_dict[j])
-
-    save_path = novel_dict[important.title].graph_path +'/'+ str(line_number)
-
-    graph.render(save_path)
-    return save_path
 
 #save_pathに保存されたグラフから情報を取得する
 def import_graph_info(save_path):
@@ -679,27 +575,10 @@ def import_graph_info(save_path):
     source.data = dict(x=x_axis, y=y_list, text=node_indices)
 
     os.remove(save_path+'.svg')
-    curdoc().clear()
-    u_lay = Row(reader, Column(color_bar,node_link))
-    lay = Column(menu, u_lay)
-    curdoc().add_root(lay)
-
-
-
-show_range_spinner = Spinner(title="直近何ページの関係を表しますか", low=1, high=1, step=1, value=1, width=70)
-show_main_people = Select(title="この人を中心とする", value="none", options=['none'], width=200)
-show_people_check = CheckboxGroup(labels=[], active=[])
-#colors=['#C41A1A','#C46868','#C4B7B7','#A9D9CD','#27D9AE']
-colors = ['#76487A', '#9F86BC', '#F9BF33', '#F1B0B2', '#CB5266']
-#colors = ['#000000', '#003333', '#006666', '#009999', '#00CCCC']
-color_bar = figure(title = '', x_range = ['嫌い','好きじゃない','どっちでもない','好き','大好き'], y_range=['1'], width = 600, height = 70, tools = [])
-color_bar.rect(x= ['嫌い','好きじゃない','どっちでもない','好き','大好き'], y=['1','1','1','1','1'], width=1, height=1,line_color=None, fill_color=colors)
-
-
-#マトリックス図を作成する関数
+    vue.children = [color_bar, node_link]
+    
+####人物相関表を作るための補助関数####
 def make_matrix_sub(center, check):
-    #p.text = important.textline[page_slider.value]
-    print(check)
     line_number = page_slider.value 
 
     ch_now_list = show_people_check.labels
@@ -765,11 +644,8 @@ def make_matrix_sub(center, check):
                 re_now_list.append([j['source'], j['target']])
                 re_emotion_list.append([j['emotion'],j['relation'],j['line']])
         
-    
-    #colors = ['#C71463', '#FB423F', '#3B8694', '#14ABC7', '#00FA96']
-    #colors = ['#000000', '#003333', '#006666', '#009999', '#00CCCC'] 
+
     colors = ['#76487A', '#9F86BC', '#F9BF33', '#F1B0B2', '#CB5266'] 
-    #colors=['#C41A1A','#C46868','#C4B7B7','#A9D9CD','#27D9AE']
 
     ch_show2 = ch_show_list
     ch_show_list = []
@@ -856,30 +732,17 @@ def make_matrix_sub(center, check):
 
                 st_text.text = source + 'から'+target+'への関係一覧'
 
-                curdoc().clear()
-                u_lay = Row(reader, Column(hm, color_bar, st_text,st_table),Column(show_range_spinner, show_main_people, show_people_check))
-                lay = Column(menu, u_lay)
-                curdoc().add_root(lay)
+                vue.children = [Row(Column(hm, color_bar, st_text,st_table),Column(show_range_spinner, show_main_people, show_people_check))]
 
             else:
-                curdoc().clear()
-                u_lay = Row(reader, Column(hm, color_bar), Column(show_range_spinner, show_main_people, show_people_check))
-
-                lay = Column(menu, u_lay)
-                curdoc().add_root(lay)
+                vue.children = [Row(Column(hm, color_bar), Column(show_range_spinner, show_main_people, show_people_check))]
+                
         else:
-            curdoc().clear()
-            u_lay = Row(reader, Column(hm,color_bar), Column(show_range_spinner, show_main_people, show_people_check))
-            lay = Column(menu, u_lay)
-            curdoc().add_root(lay)
+            vue.children = [Row(Column(hm,color_bar), Column(show_range_spinner, show_main_people, show_people_check))]
+            
 
     hm.on_event(events.Tap, hmTap_callback)
-
-    curdoc().clear()
-    u_lay = Row(reader, Column(hm,color_bar), Column(show_range_spinner, show_main_people, show_people_check))
-
-    lay = Column(menu, u_lay)
-    curdoc().add_root(lay)
+    vue.children = [Row(Column(hm,color_bar), Column(show_range_spinner, show_main_people, show_people_check))]
 
 def show_main_renderer(attr, old, new):
     print('show_main_renderer')
@@ -897,15 +760,8 @@ def show_range_renderer(attr, old, new):
         print('show_range_renderer')
         make_matrix_sub(False, False)
 
-show_main_people.on_change('value', show_main_renderer)
-show_people_check.on_change('active', show_people_renderer)
-show_range_spinner.on_change('value', show_range_renderer)
-
-
-#マトリックス図を選択されたときに表示する関数
+#人物相関表を選択されたときに表示する関数
 def make_matrix():
-
-    curdoc().clear()
 
     show_range_spinner.high = len(important.textline)
     
@@ -921,7 +777,8 @@ def make_matrix():
 
     make_matrix_sub(False, False)
 
-    
+
+####人物相関表に関する関数####
 #キャラクターを削除する関数
 def ch_remove_renderer():
     selectionRow=ch_source.selected.indices
@@ -931,9 +788,7 @@ def ch_remove_renderer():
 
         important.people_list.remove({'people':rm_people, 'line':rm_line})
         novel_dict[important.title].people_list=important.people_list
-    save()
-    curdoc().clear()
-    make_table()
+    make_person_fre()
 
 #関係性を削除する関数
 def re_remove_renderer():
@@ -947,9 +802,8 @@ def re_remove_renderer():
 
         important.relation_list.remove({'source':rm_source, 'target':rm_target, 'relation':rm_relation, 'emotion':rm_emotion, 'line':rm_line})
         novel_dict[important.title].relation_list=important.relation_list
-    curdoc().clear()
-    save()
-    make_table()
+
+    make_person_fre()
 
 #関係性の編集の保存
 def ch_edit_renderer():
@@ -977,13 +831,9 @@ def ch_edit_renderer():
     novel_dict[important.title].relation_list = new_relation_list
     important.relation_list = new_relation_list
 
-    curdoc().clear()
-    make_table()
+    make_person_fre()
 
-    save()
-
-
-#関係しの編集の保存
+#関係の編集の保存
 def re_edit_renderer():
     new_relation = []
     for source, target, relation, emotion, line in zip(re_source.data['source'], re_source.data['target'], re_source.data['relation'], re_source.data['emotion'], re_source.data['line']):
@@ -993,7 +843,7 @@ def re_edit_renderer():
 
     novel_dict[important.title].relation_list = new_relation
     important.relation_list = new_relation
-    save()
+    make_person_fre()
 
 #登場人物表の追加
 def ch_plus_renderer():
@@ -1041,14 +891,12 @@ def re_minus_renderer():
         line.remove('')
         re_source.data = dict(source=source,target=target,relation=relation,emotion=emotion, line=line)
 
-
-frequency_color = ['white', '#d5eaff', '#aad5ff', '55aaff', '#0080ff','#006ad5','#004080','#002b55']
-frequency_color = ['white','#f8dcea','#f1b8d5','#ea95bf','#dc4e95','#d52b80','#8d1d55','#6a1540']
-frequency_color = ['white','#dcf8dc','#b8f1b8','#95ea95','#4edc4e','#23b123','#1d8d1d','#156a15']
-frequency_count = [[0],[1,2],[3,4],[5,6],[7,8],[9,10],[11,12]]
-
-
+#登場人物編集表で選択された人物が変化した時
 def ch_select_renderer(attr, old, new):
+    make_person_fre()
+
+#情報編集画面のレイアウトを作る関数
+def make_person_fre():    
     person = [ch_source.data['people'][i] for i in ch_source.selected.indices]
     novel_coloring(person, 'yellow')
     for i in person:
@@ -1098,62 +946,14 @@ def ch_select_renderer(attr, old, new):
 
     frequency_heat.on_event(events.Tap, fre_heat_Tap)
 
-    curdoc().clear()
-    edit_lay = Column(Row(ch_plus_button, ch_minus_button), Row(ch_table, Column(ch_delete_button, ch_edit_button)),frequency_heat,Row(re_plus_button, re_minus_button), Row(re_table, Column(re_delete_button, re_edit_button)))
-    u_lay = Row(reader, edit_lay)
-    lay = Column(menu, u_lay)
-    curdoc().add_root(lay)
-
-    novel_dict[important.title].ch_freq = ch_frequency_dict
-
-    save()
-
-ch_source=ColumnDataSource(data=dict(people=[], line=[]))
-
-ch_columns = [
-        TableColumn(field="people", title="人物名"),
-        TableColumn(field="line", title="初登場ページ"),
-    ]
-ch_table = DataTable(source=ch_source, columns=ch_columns, width=600, height=200, editable = True, scroll_to_selection = True, selectable = 'checkbox')
-
-re_source=ColumnDataSource(data=dict(source=[], target=[], relation=[], emotion = [], line=[]))
-re_columns = [
-    TableColumn(field="source", title="誰から"),
-    TableColumn(field="target", title="誰への"),
-    TableColumn(field="relation", title="関係"),
-    TableColumn(field="emotion", title="好感度"),
-    TableColumn(field="line", title="ページ")
-]
-re_table = DataTable(source=re_source, columns=re_columns, width=600, height=200, editable = True, scroll_to_selection = True, selectable =True)
-
-
-ch_delete_button = Button(label='消去', button_type='success', width =100)
-ch_delete_button.on_click(ch_remove_renderer)
-ch_edit_button = Button(label='変更を保存', button_type='success', width=100)
-ch_edit_button.on_click(ch_edit_renderer)
-ch_plus_button = Button(label='+', button_type='success', width=50, background='white')
-ch_plus_button.on_click(ch_plus_renderer)
-ch_minus_button = Button(label='-', button_type='success', width=50, background='white')
-ch_minus_button.on_click(ch_minus_renderer)
-ch_source.selected.on_change('indices', ch_select_renderer)
-
-
-
-
-re_delete_button = Button(label='消去', button_type='success', width =100)
-re_delete_button.on_click(re_remove_renderer)
-re_edit_button = Button(label='変更を保存', button_type='success', width=100)
-re_edit_button.on_click(re_edit_renderer)
-re_plus_button = Button(label='+', button_type='success', width=50, background='white')
-re_plus_button.on_click(re_plus_renderer)
-re_minus_button = Button(label='-', button_type='success', width=50, background='white')
-re_minus_button.on_click(re_minus_renderer)
-
-
+    if ch_source.selected.indices == []:
+        vue.children = [Row(ch_plus_button, ch_minus_button), Row(ch_table, Column(ch_delete_button, ch_edit_button)),Row(re_plus_button, re_minus_button), Row(re_table, Column(re_delete_button, re_edit_button))]
+    else:
+        vue.children = [Row(ch_plus_button, ch_minus_button), Row(ch_table, Column(ch_delete_button, ch_edit_button)),frequency_heat,Row(re_plus_button, re_minus_button), Row(re_table, Column(re_delete_button, re_edit_button))]
+    #save()
 
 #編集のための表を作る関数
-def make_table():
-    print('make_table')
+def make_arrange():
     
     ch_source.data = dict(
         people = [i['people'] for i in important.people_list],
@@ -1168,78 +968,30 @@ def make_table():
         line = [i['line'] for i in important.relation_list]
     )
 
-    p.text = important.textline[important.pageNumber]
-    curdoc().clear()
-    ch_source.selected.indices = []
+    print(ch_source.selected.indices)
     person = [ch_source.data['people'][i] for i in ch_source.selected.indices]
     novel_coloring(person, 'yellow')
-    edit_lay = Column(Row(ch_plus_button, ch_minus_button), Row(ch_table, Column(ch_delete_button, ch_edit_button)),Row(re_plus_button, re_minus_button), Row(re_table, Column(re_delete_button, re_edit_button)))
-    u_lay = Row(reader, edit_lay)
-    lay = Column(menu, u_lay)
-    curdoc().add_root(lay)
-
-
-####登場人物の自動追加のための関数、widgetたち####    
-
-auto_ch = Button(label='登場人物の候補を抽出', button_type='success', width=200)
-LABELS = ["Option 1", "Option 2", "Option 3"]
-
-auto_button = Button(label='自動情報抽出', button_type='success', width=200)
-auto_text = PreText(text='', width=100, height=20)
-all_auto_ch = Column(auto_button, auto_text)
-
-
-checkbox_group = CheckboxGroup(labels=[], active=[0, 1], width = 200)
-add_ch = Button(label='追加', button_type='success', width = 70)
-
+    make_person_fre()
+    
+####情報の自動抽出に関する関数####
 #表示しているページからまだ追加されていない関係を抽出する関数
 def auto_character():
     peoples = [i['people'] for i in important.people_list]
     use_text = novel_dict[important.title].row_text[important.pageNumber]
 
     ginza_set = set()
-    """
-    #MeCabで作った辞書のリストと合致するものを抽出する
-    m = MeCab.Tagger("-Ochasen")
-    mecab_text = m.parse(use_text)
-    mecab_line = mecab_text.split('\n')[:-1]
-    mecab_set = set()
-    for i in mecab_line:
-        i_me = i.split('\t')
-        if not (i_me[0]=='EOS'):
-            hinsi=i_me[3]
-            hinsi_list = hinsi.split('-')
-            if hinsi_list[0]=='名詞':
-                mecab_set.add(i_me[0])
-
-    people_ca = mecab_set & set(people_candidate)
-    print(people_ca)
-    ginza_set = set()
-    for i in people_ca:
-        if not(i in peoples):ginza_set.add(i)
-    """
-
     doc = nlp(use_text)
     ginza_only_set=set()
-    print(doc.ents)
     for ent in doc.ents:
         if (ent.label_ in ['Person', 'Position_Vocation']) and (not('\u3000' in ent.text)) and (not(ent.text in peoples)):
             ginza_set.add(ent.text)
             ginza_only_set.add(ent.text)
-
-    print('ginzaの結果:', ginza_only_set)
     
     checkbox_group.labels = list(ginza_set)
 
     #レイアウトの変更
-    curdoc().clear()
-    lay2 = Column(Row(forward_button, backward_button), auto_ch,checkbox_group)
+    auto_ch.children = [Column(auto_ch_button, Row(add_ch, cancel_button)), checkbox_group]
     checkbox_group.active = list(range(len(list(ginza_set))))
-    book_lay = Column(bookmark, add_ch)
-    menu = Row(lay1,lay2, book_lay, jump_mark, input_info, import_down, all_auto_ch)
-    lay = Column(menu, reader)
-    curdoc().add_root(lay)
-
     
     novel_coloring(list(ginza_set), 'palegreen')
 
@@ -1250,7 +1002,7 @@ def all_auto_ch_renderer():
     important.people_list=character_list
     novel_dict[important.title].relation_list = relation_list
     important.relation_list=relation_list
-    save()
+    #save()
     auto_text.text = '情報抽出を開始しました'
 
 auto_button.on_click(all_auto_ch_renderer)
@@ -1272,7 +1024,6 @@ def checkbox_group_renderer(attr, new, old):
     active_person = [new_ch[i] for i in active]
     novel_coloring(active_person, 'palegreen')
 
-checkbox_group.on_change('active',checkbox_group_renderer)
 
 #選択された登場人物候補を登場人物として追加
 def add_ch_renderer():
@@ -1282,53 +1033,74 @@ def add_ch_renderer():
         if i in active:
             novel_dict[important.title].people_list.append({'people':new_ch[i], 'line':page_slider.value})
             important.people_list=novel_dict[important.title].people_list 
-    save()
+    #save()
 
     p.text = important.textline[page_slider.value]
+    auto_ch.children = [auto_ch_button]
     show_vis()
-    
-def show_vis():
-    if select_vis.value == '人物相関図':make_node_link()
-    if select_vis.value == '人物相関表': make_matrix()
-    if select_vis.value == '編集画面': 
-        person = [ch_source.data['people'][i] for i in ch_source.selected.indices]
-        novel_coloring(person, 'yellow')
+
+def cancel_renderer():
+    auto_ch.children = [auto_ch_button]
+    novel_coloring([], 'white')
+
+####関数の紐付け#####
+import_down.on_click(import_renderer)
+already_import.on_change('value', already_import_renderer)
+novel_decide.on_click(url_get)
+forward.on_click(forward_renderer)
+backward.on_click(backward_renderer)
+page_slider.on_change('value', page_slider_renderer)
+
+decide_ch.on_click(chracter_renderer)
+decide_re.on_click(relation_renderer)
+select_vis.on_change('value',select_vis_renderer)
 
 
-add_ch.on_click(add_ch_renderer)
-        
-auto_ch.on_click(auto_character)
+####人物相関表に関するツール####
+show_main_people.on_change('value', show_main_renderer)
+show_people_check.on_change('active', show_people_renderer)
+show_range_spinner.on_change('value', show_range_renderer)
+
+####情報編集画面に関するツール####
+ch_delete_button.on_click(ch_remove_renderer)
+ch_edit_button.on_click(ch_edit_renderer)
+ch_plus_button.on_click(ch_plus_renderer)
+ch_minus_button.on_click(ch_minus_renderer)
+ch_source.selected.on_change('indices', ch_select_renderer)
+re_delete_button.on_click(re_remove_renderer)
+re_edit_button.on_click(re_edit_renderer)
+re_plus_button.on_click(re_plus_renderer)
+re_minus_button.on_click(re_minus_renderer)
+
+####情報抽出のに関する関数####
+add_ch.on_click(add_ch_renderer) 
+cancel_button.on_click(cancel_renderer)       
+auto_ch_button.on_click(auto_character)
+checkbox_group.on_change('active',checkbox_group_renderer)
 
 
-####システムを動かす上で格納したい情報を取得する####
-if os.path.exists('read-aozora/data/novel_dict.binaryfile'):
-    print('既にデータがあるのでロードします')
-    with open('read-aozora/data/novel_dict.binaryfile', 'rb') as sp:
-        novel = pickle.load(sp)
-    novel_dict = novel[0]
-    novel_list = novel[1]
-    already_novels = novel[2]
-    already_import.options = novel_list
-else:    
-    print('新たにデータを生成します')
-    novel_list = ['none'] #ダウンロード済みのタイトルのリスト
-    novel_dict = {} #本のタイトルと
-    already_novels = []
 
-with open('read-aozora/data/people_candidate.txt') as f:
-    people_candidate_txt = f.read()
 
-people_candidate = people_candidate_txt.split('\n')
-people_candidate = people_candidate[:-2]
 
-####システムのレイアウトを作る関数たち####
-lay1 = Column(page_slider, select_vis)
-lay2 = Column(Row(forward_button, backward_button), auto_ch)
-menu = Row(lay1,lay2, bookmark, jump_mark, input_info, import_down, all_auto_ch)
-reader = Column(title, author, p)
+start()
 
-lay = Column(menu, reader)
+####HTMLへの受け渡し#####
+doc = curdoc()
 
-curdoc().add_root(lay)
-print('レイアウト生成完了')
+doc.add_root(forward)
+doc.add_root(backward)
+doc.add_root(page_slider)
+doc.add_root(bookmark)
+doc.add_root(jump_mark)
+doc.add_root(select_book)
+
+doc.add_root(select_vis)
+doc.add_root(info_input)
+doc.add_root(auto_ch)
+doc.add_root(all_auto)
+
+doc.add_root(novel)
+doc.add_root(vue)
+
+
 

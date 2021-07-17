@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+  
+  <head>
+    <meta charset="UTF-8">
+    <title>読書アプリ</title>
+    <link href="read-aozora/static/css/special.css" rel="stylesheet">
+  </head>
+  <body>
+    {% extends base %}
+    {% block title %}Embed Test{% endblock %}
+    {% block contents %}
+    <div class = "head">
+        <h1>ReadAozora</h1>
+        <div class = "page_tool">
+            <div class="tool">{{ embed(roots.page_slider) }}</div>
+            <div class="tool">{{ embed(roots.forward) }}</div>
+            <div class="tool">{{ embed(roots.backward) }}</div>
+            <div class="tool">{{ embed(roots.bookmark) }}</div>
+            <div class="tool">{{ embed(roots.jump_mark) }}</div>
+            <div class="tool">{{ embed(roots.select_book) }}</div>
+        </div>
+    </div>
+    <div class="head_2">
+        <div class = "tool">{{ embed(roots.select_vis) }}</div>
+        <div class = "tool">{{ embed(roots.info_input) }}</div>
+        <div class = "tool">{{ embed(roots.select_vis) }}</div>
+        <div class = "tool">{{ embed(roots.all_auto) }}</div>
+        <div class = "tool">{{ embed(roots.auto_ch) }}</div>
+    </div>
+    <div class = "novel_and_vue">
+        <div class = "novel">{{ embed(roots.novel) }}</div>
+        <div class = "vue">{{ embed(roots.vue) }}</div>
+    <div>
+    {% endblock %}
+  </body> 
+</html>
+
+<script
+    src="https://demo.bokeh.org/sliders/autoload.js?bokeh-autoload-element=1000&bokeh-app-path=/sliders&bokeh-absolute-url=https://demo.bokeh.org/sliders"
+    id="1000">
+</script>

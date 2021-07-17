@@ -1,0 +1,8 @@
+digraph {
+	graph [size="600,600"]
+	node [fixedsize=true height=140 width=420]
+	"ジョバンニ"
+	node [fixedsize=true height=140 width=420]
+	"カムパネルラ"
+	"ジョバンニ" -> "カムパネルラ" [label="</p><p class = \"info\"></p><p class = \"info\">二、活版所</p><p class = \"info\"></p><p class = \"info\">　ジョバンニが学校の門を出るとき、同じ組の七八人は家へ帰らずカムパネルラをまん中にして校庭の隅の桜の木のところに集まっていました"]
+}

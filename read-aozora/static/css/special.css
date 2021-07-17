@@ -1,0 +1,35 @@
+.head {
+    display: flex;
+}
+.head_2 {
+    display: flex;
+}
+
+.novel_and_vue {
+    display: flex; 
+}
+
+h1 {
+    margin-right: 200px;
+}
+
+.page_tool {
+
+    width: 100%;
+    display: flex;
+    margin-right: auto;
+
+   }
+   
+.tool {
+    width: auto;
+    margin: 2px;
+   }
+
+.novel {
+    margin: 20px;
+}
+
+.vue {
+    margin: 20px;
+}

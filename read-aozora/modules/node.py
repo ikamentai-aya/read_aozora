@@ -1,6 +1,46 @@
 from bokeh.plotting import figure
-from bokeh.models import (Ellipse, GraphRenderer, StaticLayoutProvider,MultiLine,EdgesAndLinkedNodes, Text,Arrow,Legend,LegendItem,
-                          HoverTool,NodesAndLinkedEdges,BoxSelectTool,TapTool,ColumnDataSource, Range1d, NormalHead, Patches, RangeTool)
+from bokeh.models import *
+from graphviz import Digraph #有向グラフ
+from xml.dom import minidom
+
+#情報をgraphvisに入れてグラフを作成する
+def make_graphvis(line_number, ch_list, re_list, graph_path):
+
+    graph = Digraph(format='svg',
+                    graph_attr={'size':"600,600"})
+
+    graph.engine= 'sfdp'
+
+    new_ch_list = [] #現在までに出てきている人のリスト
+    for i in ch_list:
+        if i['line'] <= line_number:
+            new_ch_list.append(i['people'])
+            #graph.node(i['people'])
+
+    new_ch_size = dict()
+    for i in new_ch_list:new_ch_size[i] = 100
+
+    new_re_dict = dict()
+    for j in re_list:
+        if j['line'] <= line_number:
+            new_re_dict[j['source']+','+j['target']] = j['relation']
+            new_ch_size[j['source']] += 10
+            new_ch_size[j['target']] += 10
+    
+    for i in new_ch_list:
+        graph.attr('node', fixedsize='true', width=str(new_ch_size[i]*3), height = str(new_ch_size[i]))
+        graph.node(i)
+
+
+    for j in new_re_dict:
+        j_list = j.split(',')
+        graph.edge(j_list[0],j_list[1],new_re_dict[j])
+
+    save_path = graph_path +'/'+ str(line_number)
+
+    graph.render(save_path)
+    return save_path
+
 
 #ノードリンク図の定義
 node_link = figure(title= '人物相関図', plot_height = 600, plot_width = 600)
