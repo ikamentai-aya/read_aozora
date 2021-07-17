@@ -50,7 +50,6 @@ stemming==1.0.1
 terminado==0.10.1
 testpath==0.5.0
 thinc==7.4.3
-torchvision==0.2.1
 tornado==6.0.4
 tqdm==4.46.1
 traitlets==4.3.3
