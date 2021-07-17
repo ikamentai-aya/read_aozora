@@ -1,15 +1,18 @@
 .head {
     display: flex;
-    width: 100%;
+    width: 100%; 
+    max-width: 1400px;
 }
 .head_2 {
     display: flex;
-    width: 100%;
+    width: 100%; 
+    max-width: 1400px;
 }
 
 .novel_and_vue {
     display: flex; 
-    width: 100%;
+    width: 100%; 
+    max-width: 1400px;
 }
 
 h1 {
@@ -18,7 +21,8 @@ h1 {
 
 .page_tool {
 
-    width: 100%;
+    width: 100%; 
+    max-width: 1400px;
     display: flex;
     margin-right: auto;
 

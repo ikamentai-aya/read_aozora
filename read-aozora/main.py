@@ -68,19 +68,6 @@ finish_text = PreText(text='', width=100, height=20)
 novel_decide = Button(label='小説を追加', button_type='success', width=100)
 select_book = Column(children = [import_down ], name = 'select_book')
 
-def import_renderer(event):
-    global select_book
-    
-    if event.item == 'ダウンロード済み':
-        #select_book = Column(import_down, already_import, name='select_book')
-        select_book.children = [import_down, already_import]
-
-    elif event.item == '新たにダウンロード':
-        select_book.children = [import_down, text_input, novel_decide, finish_text]
-
-    else:
-        select_book.children = [import_down]
-
 #########
 
 ####しおりをつける機能####
@@ -102,10 +89,6 @@ def input_select_renderer(event):
     else:
         info_input.children = [input_select]
     
-
-input_select.on_click(input_select_renderer)
-
-
 ####登場人物の追加####
 chracter_input = TextInput(value="default",title="人物を入力してください", width = 200)
 decide_ch = Button(label='以上の人物を追加', button_type='success', width = 200)
@@ -138,6 +121,7 @@ color_bar.rect(x= ['嫌い','好きじゃない','どっちでもない','好き
 show_range_spinner = Spinner(title="直近何ページの関係か", low=1, high=1, step=1, value=1, width=50)
 show_main_people = Select(title="この人を中心とする", value="none", options=['none'], width=100)
 show_people_check = CheckboxGroup(labels=[], active=[], width = 100)
+first_choice = False
 ###############
 
 ####情報編集画面のツール####
@@ -192,6 +176,21 @@ def start():
     people_candidate = people_candidate_txt.split('\n')
     people_candidate = people_candidate[:-2]
 
+#小説の選択画面
+def import_renderer(event):
+    global select_book
+    
+    if event.item == 'ダウンロード済み':
+        #select_book = Column(import_down, already_import, name='select_book')
+        select_book.children = [import_down, already_import]
+
+    elif event.item == '新たにダウンロード':
+        select_book.children = [import_down, text_input, novel_decide, finish_text]
+
+    else:
+        select_book.children = [import_down]
+
+
 ####小説の読み込み関数####
 def already_import_renderer(attr, old, new):
     if not (already_import.value == 'none'):
@@ -213,17 +212,19 @@ def already_import_renderer(attr, old, new):
         page_slider.end = len(important.textline)
         page_slider.value = important.pageNumber
         
-        """
+        
         #matrixの調整
+        global first_choice
+        first_choice = True
         show_range_spinner.high = len(important.textline)
         show_range_spinner.value = len(important.textline)
         ch_now_list = []
         for i in important.people_list:
             if i['line'] <= page_slider.value:ch_now_list.append(i['people'])
-        
         show_people_check.labels = ch_now_list
         show_people_check.active = list(range(len(ch_now_list)))
-        """
+        first_choice= False
+        
         #ブックマークの更新
         menu = []
         for i in novel_dict[important.title].bookMark:
@@ -238,7 +239,6 @@ def already_import_renderer(attr, old, new):
         #save()
         show_vis()
         
-
 #url_getのsub　routin
 def download(url):
     # データファイルをダウンロードする
@@ -316,7 +316,7 @@ def url_get(event):
         novel_dict[title] = Important(title, author, lines, row_lines,800, 0, [], [], [], [], g_path, dict())
         novel_list.append(title)
         already_import.options = novel_list
-        #save()
+        save()
         finish_text.text = 'ダウンロードが完了しました'
 
 ####ページの移動関数####
@@ -338,7 +338,7 @@ def page_slider_renderer(attr, new, old):
     p.text = important.textline[head]
 
     show_vis()
-    #save()
+    save()
 
 #########
 
@@ -353,7 +353,7 @@ def chracter_renderer():
     if not (chracter_input.value in ch_list):
         novel_dict[important.title].people_list.append({'people':chracter_input.value, 'line':page_slider.value})
         important.people_list=novel_dict[important.title].people_list 
-        #save()
+        save()
         show_vis()
 
 #関係性としてデータに保存
@@ -364,7 +364,7 @@ def relation_renderer():
 
     #novel_dict[important.title].relation_list.append({'source':source_input.value, 'target':target_input.value, 'line':important['headNumber'], 'emotion':emotion_input.value, 'relation':relation_input.value})
     important.relation_list = novel_dict[important.title].relation_list
-    #save()
+    save()
     show_vis()
 
 ##################3
@@ -373,7 +373,6 @@ def relation_renderer():
 def select_vis_renderer(attr, old, new):
     show_vis()
     
-
 def show_vis():
 
     if select_vis.value == '表示なし':
@@ -395,7 +394,6 @@ def make_node_link():
     save_path = make_graphvis(page_slider.value, important.people_list, important.relation_list, novel_dict[important.title].graph_path)
     import_graph_info(save_path)
     
-
 #save_pathに保存されたグラフから情報を取得する
 def import_graph_info(save_path):
 
@@ -745,18 +743,19 @@ def make_matrix_sub(center, check):
     vue.children = [Row(Column(hm,color_bar), Column(show_range_spinner, show_main_people, show_people_check))]
 
 def show_main_renderer(attr, old, new):
-    print('show_main_renderer')
-    make_matrix_sub(True, False)
+    global first_choice
+    if first_choice == False:
+        make_matrix_sub(True, False)
 
 def show_people_renderer(attr, old, new):
-    global initial_set
-    if initial_set == False and center_set == False:
+    global first_choice
+    if first_choice == False and center_set == False:
         print('show_people_renderer')
         make_matrix_sub(False, True)
 
 def show_range_renderer(attr, old, new):
-    global initial_set
-    if initial_set == False:
+    global first_choice
+    if first_choice == False:
         print('show_range_renderer')
         make_matrix_sub(False, False)
 
@@ -789,6 +788,7 @@ def ch_remove_renderer():
         important.people_list.remove({'people':rm_people, 'line':rm_line})
         novel_dict[important.title].people_list=important.people_list
     make_person_fre()
+    save()
 
 #関係性を削除する関数
 def re_remove_renderer():
@@ -804,6 +804,7 @@ def re_remove_renderer():
         novel_dict[important.title].relation_list=important.relation_list
 
     make_person_fre()
+    save()
 
 #関係性の編集の保存
 def ch_edit_renderer():
@@ -832,6 +833,7 @@ def ch_edit_renderer():
     important.relation_list = new_relation_list
 
     make_person_fre()
+    save()
 
 #関係の編集の保存
 def re_edit_renderer():
@@ -844,6 +846,7 @@ def re_edit_renderer():
     novel_dict[important.title].relation_list = new_relation
     important.relation_list = new_relation
     make_person_fre()
+    save()
 
 #登場人物表の追加
 def ch_plus_renderer():
@@ -1002,7 +1005,7 @@ def all_auto_ch_renderer():
     important.people_list=character_list
     novel_dict[important.title].relation_list = relation_list
     important.relation_list=relation_list
-    #save()
+    save()
     auto_text.text = '情報抽出を開始しました'
 
 auto_button.on_click(all_auto_ch_renderer)
@@ -1033,15 +1036,22 @@ def add_ch_renderer():
         if i in active:
             novel_dict[important.title].people_list.append({'people':new_ch[i], 'line':page_slider.value})
             important.people_list=novel_dict[important.title].people_list 
-    #save()
+    save()
 
     p.text = important.textline[page_slider.value]
     auto_ch.children = [auto_ch_button]
     show_vis()
 
+#色付けを直す関数
 def cancel_renderer():
     auto_ch.children = [auto_ch_button]
     novel_coloring([], 'white')
+
+#現状の変化を保存する
+def save():
+    with open('read-aozora/data/novel_dict.binaryfile', 'wb') as sp:
+        pickle.dump([novel_dict,novel_list, already_novels] , sp)
+
 
 ####関数の紐付け#####
 import_down.on_click(import_renderer)
@@ -1051,6 +1061,7 @@ forward.on_click(forward_renderer)
 backward.on_click(backward_renderer)
 page_slider.on_change('value', page_slider_renderer)
 
+input_select.on_click(input_select_renderer)
 decide_ch.on_click(chracter_renderer)
 decide_re.on_click(relation_renderer)
 select_vis.on_change('value',select_vis_renderer)
