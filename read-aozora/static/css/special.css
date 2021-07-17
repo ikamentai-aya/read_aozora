@@ -1,12 +1,15 @@
 .head {
     display: flex;
+    width: 100%;
 }
 .head_2 {
     display: flex;
+    width: 100%;
 }
 
 .novel_and_vue {
     display: flex; 
+    width: 100%;
 }
 
 h1 {
@@ -28,8 +31,9 @@ h1 {
 
 .novel {
     margin: 20px;
+    width: 45%;
 }
 
 .vue {
-    margin: 20px;
+    width: 45%;
 }

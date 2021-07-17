@@ -135,9 +135,9 @@ color_bar = figure(title = '', x_range = ['嫌い','好きじゃない','どっ�
 color_bar.rect(x= ['嫌い','好きじゃない','どっちでもない','好き','大好き'], y=['1','1','1','1','1'], width=1, height=1,line_color=None, fill_color=colors)
 
 ####人物相関図のツール#####
-show_range_spinner = Spinner(title="直近何ページの関係を表しますか", low=1, high=1, step=1, value=1, width=70)
-show_main_people = Select(title="この人を中心とする", value="none", options=['none'], width=200)
-show_people_check = CheckboxGroup(labels=[], active=[])
+show_range_spinner = Spinner(title="直近何ページの関係か", low=1, high=1, step=1, value=1, width=50)
+show_main_people = Select(title="この人を中心とする", value="none", options=['none'], width=100)
+show_people_check = CheckboxGroup(labels=[], active=[], width = 100)
 ###############
 
 ####情報編集画面のツール####
@@ -1077,10 +1077,6 @@ add_ch.on_click(add_ch_renderer)
 cancel_button.on_click(cancel_renderer)       
 auto_ch_button.on_click(auto_character)
 checkbox_group.on_change('active',checkbox_group_renderer)
-
-
-
-
 
 start()
 
