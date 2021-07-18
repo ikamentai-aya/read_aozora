@@ -4,14 +4,20 @@
   <head>
     <meta charset="UTF-8">
     <title>読書アプリ</title>
-    <link href="read-aozora/static/css/special.css" rel="stylesheet">
+    <!--<link href="read-aozora/static/css/special.css" rel="stylesheet">-->
+    <meta charset="utf-8">
+      {{ bokeh_css }}
+      {{ bokeh_js }}
+      <style type="text/css"> {% include 'styles.css' %}</style>
   </head>
   <body>
     {% extends base %}
     {% block title %}Embed Test{% endblock %}
     {% block contents %}
     <div class = "head">
+        <h1 class='design'>| </h1>
         <h1>ReadAozora</h1>
+        <i class="glyphicon glyphicon-book"></i>
         <div class = "page_tool">
             <div class="tool">{{ embed(roots.page_slider) }}</div>
             <div class="tool">{{ embed(roots.forward) }}</div>

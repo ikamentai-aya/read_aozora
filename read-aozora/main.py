@@ -55,27 +55,27 @@ novel = Column(title, author,p, name = 'novel')
 
 
 ####本を読むための機能#####   
-forward = Button(label='▷', button_type='success', width=100, name='forward')
-backward = Button(label='◁', button_type='success', width=100, name='backward')
+forward = Button(label='▷', button_type='success', width=100,  css_classes =['custom_button_bokeh'], name='forward')
+backward = Button(label='◁', button_type='success', width=100, css_classes =['custom_button_bokeh'], name='backward')
 page_slider = Slider(start=0, end=len(important.textline)+1, value=1, step=1, title="現在の段落", width=200, name = 'page_slider')
 ########################
 
 ####読む本を選ぶためのwidget#####
-import_down = Dropdown(label="小説の選択", button_type="warning", menu=['none','ダウンロード済み', '新たにダウンロード'], width=200)
+import_down = Dropdown(label="小説の選択", button_type="warning", menu=['none','ダウンロード済み', '新たにダウンロード'], width=200, css_classes =['custom_dropdown'])
 already_import = Select(title="小説", value="none", options=['none'], width=200)
 text_input= TextInput(value="default",title="URLを入力してください:", width=200) #新たにダウンロードする本のURLを打ち込むTextInput
 finish_text = PreText(text='', width=100, height=20)
-novel_decide = Button(label='小説を追加', button_type='success', width=100)
+novel_decide = Button(label='小説を追加', button_type='success', width=100, css_classes =['custom_button_bokeh'])
 select_book = Column(children = [import_down ], name = 'select_book')
 
 #########
 
 ####しおりをつける機能####
-bookmark = Button(label='しおり', button_type='success', width=100, name ='bookmark')
-jump_mark = Dropdown(label="しおりに飛ぶ", button_type="warning", menu=[], width = 200, name = 'jump_mark')
+bookmark = Button(label='しおり', button_type='success', width=100, name ='bookmark', css_classes =['custom_button_bokeh'])
+jump_mark = Dropdown(label="しおりに飛ぶ", button_type="warning", menu=[], width = 200, name = 'jump_mark', css_classes =['custom_dropdown'])
 
 ####情報追加#####
-input_select = Dropdown(label="情報追加", button_type="warning", menu=['none','登場人物追加', '関係性追加'], width=200)
+input_select = Dropdown(label="情報追加", button_type="warning", menu=['none','登場人物追加', '関係性追加'], width=200, css_classes =['custom_dropdown'])
 info_input = Column(children = [input_select], name = 'info_input')
 
 def input_select_renderer(event):
@@ -91,7 +91,7 @@ def input_select_renderer(event):
     
 ####登場人物の追加####
 chracter_input = TextInput(value="default",title="人物を入力してください", width = 200)
-decide_ch = Button(label='以上の人物を追加', button_type='success', width = 200)
+decide_ch = Button(label='以上の人物を追加', button_type='success', width = 200, css_classes =['custom_button_bokeh'])
 
 
 #####関係の追加#####
@@ -99,21 +99,22 @@ source_input = Select(title='誰から',value='none',options=['none'], width=200
 target_input = Select(title='誰への',value='none',options=['none'], width=200)
 relation_input = TextInput(value='default',title='どんな関係', width=200)
 emotion_input = Slider(start=1, end=5, value=1, step=1, title="好意的か（5:好意的、1:否定的）", width=200)
-decide_re = Button(label='以上の関係を追加', button_type='success', width=200)
+decide_re = Button(label='以上の関係を追加', button_type='success', width=200, css_classes =['custom_button_bokeh'])
 
 ####可視化の選択####
 select_vis = Select(title="可視化の選択", value="表示なし", options=['表示なし', '人物相関図', '人物相関表','編集画面'], width=200, name="select_vis")
 
 ####登場人物の自動抽出####
-auto_ch_button = Button(label='登場人物の候補を抽出', button_type='success', width=200)
+auto_ch_button = Button(label='登場人物の候補を抽出', button_type='success', width=200, css_classes =['custom_button_bokeh'])
 LABELS = ["Option 1", "Option 2", "Option 3"]
 checkbox_group = CheckboxGroup(labels=[], active=[0, 1], width = 200)
-add_ch = Button(label='追加', button_type='success', width = 70)
+add_ch = Button(label='追加', button_type='success', width = 70, css_classes =['custom_button_bokeh'])
 auto_ch = Column(auto_ch_button, name = 'auto_ch')
 
 ####可視化のタブ等####
 vue = Column(children=[], name = 'vue')
 colors = ['#76487A', '#9F86BC', '#F9BF33', '#F1B0B2', '#CB5266']
+#colors = ['#000000', '#003333', '#006666', '#009999', '#00CCCC']
 color_bar = figure(title = '', x_range = ['嫌い','好きじゃない','どっちでもない','好き','大好き'], y_range=['1'], width = 600, height = 70, tools = [])
 color_bar.rect(x= ['嫌い','好きじゃない','どっちでもない','好き','大好き'], y=['1','1','1','1','1'], width=1, height=1,line_color=None, fill_color=colors)
 
@@ -127,25 +128,25 @@ first_choice = False
 ####情報編集画面のツール####
 frequency_color = ['white','#dcf8dc','#b8f1b8','#95ea95','#4edc4e','#23b123','#1d8d1d','#156a15']
 frequency_count = [[0],[1,2],[3,4],[5,6],[7,8],[9,10],[11,12]]
-ch_delete_button = Button(label='消去', button_type='success', width =100)
-ch_edit_button = Button(label='変更を保存', button_type='success', width=100)
-ch_plus_button = Button(label='+', button_type='success', width=50, background='white')
-ch_minus_button = Button(label='-', button_type='success', width=50, background='white')
-re_delete_button = Button(label='消去', button_type='success', width =100)
-re_edit_button = Button(label='変更を保存', button_type='success', width=100)
-re_plus_button = Button(label='+', button_type='success', width=50, background='white')
-re_minus_button = Button(label='-', button_type='success', width=50, background='white')
+ch_delete_button = Button(label='消去', button_type='success', width =100, css_classes =['custom_button_bokeh'])
+ch_edit_button = Button(label='変更を保存', button_type='success', width=100, css_classes =['custom_button_bokeh'])
+ch_plus_button = Button(label='+', button_type='success', width=50, background='white', css_classes =['custom_button_bokeh'])
+ch_minus_button = Button(label='-', button_type='success', width=50, background='white', css_classes =['custom_button_bokeh'])
+re_delete_button = Button(label='消去', button_type='success', width =100, css_classes =['custom_button_bokeh'])
+re_edit_button = Button(label='変更を保存', button_type='success', width=100, css_classes =['custom_button_bokeh'])
+re_plus_button = Button(label='+', button_type='success', width=50, background='white', css_classes =['custom_button_bokeh'])
+re_minus_button = Button(label='-', button_type='success', width=50, background='white', css_classes =['custom_button_bokeh'])
 
 ####登場人物の自動抽出に関連するツール####
-auto_ch_button = Button(label='登場人物の候補を抽出', button_type='success', width=200)
+auto_ch_button = Button(label='登場人物の候補を抽出', button_type='success', width=200, css_classes =['custom_button_bokeh'])
 LABELS = ["Option 1", "Option 2", "Option 3"]
 checkbox_group = CheckboxGroup(labels=[], active=[0, 1], width = 200)
-add_ch = Button(label='追加', button_type='success', width = 70)
+add_ch = Button(label='追加', button_type='success', width = 70, css_classes =['custom_button_bokeh'])
 auto_ch = Row(children = [auto_ch_button], name = 'auto_ch')
-cancel_button = Button(label='キャンセル', button_type='success', width = 70)
+cancel_button = Button(label='キャンセル', button_type='success', width = 70, css_classes =['custom_button_bokeh'])
 
 ####自動情報抽出####
-auto_button = Button(label='自動情報抽出', button_type='success', width=200)
+auto_button = Button(label='自動情報抽出', button_type='success', width=200, css_classes =['custom_button_bokeh'])
 auto_text = PreText(text='', width=100, height=20)
 all_auto = Column(auto_button, auto_text, name='all_auto')
 

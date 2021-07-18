@@ -1,3 +1,17 @@
+.custom_button_bokeh button.bk.bk-btn.bk-btn-success {
+    color:white;
+    font-size:12pt;
+    background-color: #9F86BC;
+    border-color: #9F86BC;
+}
+
+.custom_dropdown button.bk.bk-btn.bk-btn-warning{
+    color: white;
+    font-size:12pt;
+    background-color:#9F86BC;
+    border-color: #9F86BC;
+}
+
 .head {
     display: flex;
     width: 100%; 
@@ -15,8 +29,13 @@
     max-width: 1400px;
 }
 
+.design {
+    margin-right: 5px;
+}
+
 h1 {
     margin-right: 200px;
+    color:#76487A;
 }
 
 .page_tool {
@@ -42,4 +61,3 @@ h1 {
 .vue {
     width: 45%;
 }
-
