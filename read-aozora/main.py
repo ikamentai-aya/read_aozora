@@ -115,6 +115,9 @@ auto_ch = Column(auto_ch_button, name = 'auto_ch')
 vue = Column(children=[], name = 'vue')
 colors = ['#76487A', '#9F86BC', '#F9BF33', '#F1B0B2', '#CB5266']
 #colors = ['#000000', '#003333', '#006666', '#009999', '#00CCCC']
+colors = ['#0065B2', '#67A5DA', '#B8C2C8', '#FBE4E2', '#DB077F']
+colors = ['#0065B2', '#67A5DA', '#B8C2C8', '#EB76B1', '#DB077F']
+
 color_bar = figure(title = '', x_range = ['嫌い','好きじゃない','どっちでもない','好き','大好き'], y_range=['1'], width = 600, height = 70, tools = [])
 color_bar.rect(x= ['嫌い','好きじゃない','どっちでもない','好き','大好き'], y=['1','1','1','1','1'], width=1, height=1,line_color=None, fill_color=colors)
 
@@ -127,6 +130,7 @@ first_choice = False
 
 ####情報編集画面のツール####
 frequency_color = ['white','#dcf8dc','#b8f1b8','#95ea95','#4edc4e','#23b123','#1d8d1d','#156a15']
+frequency_color = ['#FFFFFF','#E8E8E8','#D1D1D1', '#B9B9B9', '#A2A2A2', '#8B8B8B', '#747474', '#5D5D5D']
 frequency_count = [[0],[1,2],[3,4],[5,6],[7,8],[9,10],[11,12]]
 ch_delete_button = Button(label='消去', button_type='success', width =100, css_classes =['custom_button_bokeh'])
 ch_edit_button = Button(label='変更を保存', button_type='success', width=100, css_classes =['custom_button_bokeh'])
@@ -408,9 +412,6 @@ def import_graph_info(save_path):
             #re_emo_dict[j['emotion']-1].append([j['source'], j['target']])
             re_emo_dict[j['source']+j['target']] = j['emotion']-1
 
-    
-    colors = ['#76487A', '#9F86BC', '#F9BF33', '#F1B0B2', '#CB5266']
-
     node_indices = [] #ノードのインデックス
     x_list = []; y_list = [] #ノードのx,y座標
     rx_list = []; ry_list = [] #ノードの縦横さいず
@@ -642,9 +643,6 @@ def make_matrix_sub(center, check):
             if (j['line'] <= page_slider.value) and (j['line'] >= start_line) and ((j['source'] in ch_show_list)and(j['target'] in ch_now_list)): 
                 re_now_list.append([j['source'], j['target']])
                 re_emotion_list.append([j['emotion'],j['relation'],j['line']])
-        
-
-    colors = ['#76487A', '#9F86BC', '#F9BF33', '#F1B0B2', '#CB5266'] 
 
     ch_show2 = ch_show_list
     ch_show_list = []
