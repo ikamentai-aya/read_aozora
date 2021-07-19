@@ -1,13 +1,13 @@
 .custom_button_bokeh button.bk.bk-btn.bk-btn-success {
     color:white;
-    font-size:12pt;
+    font-size:10pt;
     background-color: #9F86BC;
     border-color: #9F86BC;
 }
 
 .custom_button_bokeh button.bk.bk-btn.bk-btn-success:active {
     color:#9F86BC;
-    font-size:12pt;
+    font-size:10pt;
     background-color: white;
     border-color: #9F86BC;
 }
