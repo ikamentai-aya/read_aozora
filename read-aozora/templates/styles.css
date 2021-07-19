@@ -5,12 +5,27 @@
     border-color: #9F86BC;
 }
 
+.custom_button_bokeh button.bk.bk-btn.bk-btn-success:active {
+    color:#9F86BC;
+    font-size:12pt;
+    background-color: white;
+    border-color: #9F86BC;
+}
+
 .custom_dropdown button.bk.bk-btn.bk-btn-warning{
     color: white;
     font-size:12pt;
     background-color:#9F86BC;
     border-color: #9F86BC;
 }
+
+.custom_dropdown button.bk.bk-btn.bk-btn-warning:active {
+    color:#9F86BC;
+    font-size:12pt;
+    background-color: white;
+    border-color: #9F86BC;
+}
+
 
 .head {
     display: flex;
@@ -60,4 +75,12 @@ h1 {
 
 .vue {
     width: 45%;
+}
+
+p {
+    font-size: 11px;
+}
+
+footer {
+    position: fixed;
 }

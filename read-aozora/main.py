@@ -902,7 +902,7 @@ def ch_select_renderer(attr, old, new):
 #情報編集画面のレイアウトを作る関数
 def make_person_fre():    
     person = [ch_source.data['people'][i] for i in ch_source.selected.indices]
-    novel_coloring(person, 'yellow')
+    novel_coloring(person, '#b8f1b8')
     for i in person:
         if not (i in ch_frequency_dict):
             frequency = []

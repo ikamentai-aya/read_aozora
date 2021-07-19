@@ -1,0 +1,36 @@
+digraph {
+	graph [size="600,600"]
+	node [fixedsize=true height=1040 width=3120]
+	"ジョバンニ"
+	node [fixedsize=true height=940 width=2820]
+	"カムパネルラ"
+	node [fixedsize=true height=100 width=300]
+	"鶴"
+	node [fixedsize=true height=100 width=300]
+	"にわとこ"
+	node [fixedsize=true height=180 width=540]
+	"かおる"
+	node [fixedsize=true height=100 width=300]
+	"横手"
+	node [fixedsize=true height=100 width=300]
+	"楊"
+	node [fixedsize=true height=560 width=1680]
+	"向う"
+	node [fixedsize=true height=180 width=540]
+	"りんどう"
+	node [fixedsize=true height=140 width=420]
+	"尼"
+	node [fixedsize=true height=140 width=420]
+	"赤帽"
+	node [fixedsize=true height=140 width=420]
+	"駅長"
+	"ジョバンニ" -> "カムパネルラ" [label="ジョバンニは思わずカムパネルラとわらいました"]
+	"ジョバンニ" -> "向う" [label="」いきなりいままで睡っていたジョバンニのとなりの男の子が向うの窓を見ながら叫んでいました"]
+	"カムパネルラ" -> "向う" [label="」カムパネルラが向う岸の、三つならんだ小さな青じろい三角標と地図とを見較べて云いました"]
+	"カムパネルラ" -> "りんどう" [label="」</p><p class = \"info\">　カムパネルラが、そう云ってしまうかしまわないうち、次のりんどうの花が、いっぱいに光って過ぎて行きました</p>"]
+	"向う" -> "りんどう" [label="</p><p class = \"info\">　向う岸も、青じろくぽうっと光ってけむり、時々、やっぱりすすきが風にひるがえるらしく、さっとその銀いろがけむって、息でもかけたように見え、また、たくさんのりんどうの花が、草をかくれたり出たりするのは、やさしい狐火のように思われました"]
+	"ジョバンニ" -> "尼" [label="ジョバンニのうしろには、いつから乗っていたのか、せいの高い、黒いかつぎをしたカトリック風の尼さんが、まん円な緑の瞳を、じっとまっすぐに落して、まだ何かことばか声かが、そっちから伝わって来るのを、虔んで聞いているというように見えました"]
+	"駅長" -> "赤帽" [label="そこら中を見ても、駅長や赤帽らしい人の、影もなかったのです"]
+	"カムパネルラ" -> "かおる" [label="」カムパネルラがかおる子に云いました"]
+	"赤帽" -> "駅長" [label="そこら中を見ても、駅長や赤帽らしい人の、影もなかったのです"]
+}
