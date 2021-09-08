@@ -115,11 +115,12 @@ auto_ch = Column(auto_ch_button, name = 'auto_ch')
 vue = Column(children=[], name = 'vue')
 colors = ['#76487A', '#9F86BC', '#F9BF33', '#F1B0B2', '#CB5266']
 #colors = ['#000000', '#003333', '#006666', '#009999', '#00CCCC']
-colors = ['#0065B2', '#67A5DA', '#B8C2C8', '#FBE4E2', '#DB077F']
 colors = ['#0065B2', '#67A5DA', '#B8C2C8', '#EB76B1', '#DB077F']
+colors = ['#2574c3', '#67A5DA', '#B8C2C8', '#ef79b4', '#DB077F']
 
-color_bar = figure(title = '', x_range = ['嫌い','好きじゃない','どっちでもない','好き','大好き'], y_range=['1'], width = 600, height = 70, tools = [])
-color_bar.rect(x= ['嫌い','好きじゃない','どっちでもない','好き','大好き'], y=['1','1','1','1','1'], width=1, height=1,line_color=None, fill_color=colors)
+
+color_bar = figure(title = '', x_range = ['大嫌い','嫌い','どっちでもない','好き','大好き'], y_range=['1'], width = 600, height = 70, tools = [])
+color_bar.rect(x= ['大嫌い','嫌い','どっちでもない','好き','大好き'], y=['1','1','1','1','1'], width=1, height=1,line_color=None, fill_color=colors)
 
 ####人物相関図のツール#####
 show_range_spinner = Spinner(title="直近何ページの関係か", low=1, high=1, step=1, value=1, width=50)
@@ -471,7 +472,7 @@ def import_graph_info(save_path):
     
     ###
 
-    node_link = figure(title= '人物相関図', plot_height = 600, plot_width = 600)
+    node_link = figure(title= '人物相関図', plot_height = 570, plot_width = 570)
     node_link.add_tools(HoverTool(tooltips=None), TapTool(), BoxSelectTool())
     node_link.xaxis.visible=False
     node_link.yaxis.visible=False
@@ -503,7 +504,7 @@ def import_graph_info(save_path):
 
     #HoverToolの追加
     node_hover_tool = HoverTool(tooltips=[("person","@index")],renderers=[graph.node_renderer])
-    edge_hover_tool = HoverTool(tooltips=[("start","@start"),("end","@end"),("index", "@index"), ('emotion', '@emotion')],renderers=[graph.edge_renderer])
+    edge_hover_tool = HoverTool(tooltips=[("誰から","@start"),("誰への","@end"),("どんな関係", "@index"), ('感情', '@emotion')],renderers=[graph.edge_renderer])
     node_link.add_tools(node_hover_tool)
     node_link.add_tools(edge_hover_tool)
 
@@ -699,7 +700,6 @@ def make_matrix_sub(center, check):
     st_text = PreText(text='', width=100, height=20)
 
     def hmTap_callback():
-        curdoc().clear()
         if len(hm_source.selected.indices)>0:
             select_Row=hm_source.selected.indices[0]
             source = hm_source.data['y'][select_Row]
@@ -900,7 +900,8 @@ def ch_select_renderer(attr, old, new):
 #情報編集画面のレイアウトを作る関数
 def make_person_fre():    
     person = [ch_source.data['people'][i] for i in ch_source.selected.indices]
-    novel_coloring(person, '#b8f1b8')
+    novel_coloring(person, '#EB76B1')
+    #登場人物の登場回数を計算する
     for i in person:
         if not (i in ch_frequency_dict):
             frequency = []
@@ -908,14 +909,14 @@ def make_person_fre():
                 frequency.append(page.count(i))
             ch_frequency_dict[i] = frequency
         
-    x_range=[str(i) for i in range(len(important.textline))]
+    x_range=[str(i) for i in range(page_slider.value+1)]
     height = len(person)*10
     toolList = ['pan', 'box_zoom', 'lasso_select', 'poly_select', 'tap', 'reset', 'save']
     frequency_heat = figure(plot_width=700, plot_height=150, x_range=x_range, y_range=person, tools=toolList)
     
-    xs = list(range(len(important.textline))) * len(person)
+    xs = list(range(page_slider.value+1)) * len(person)
     ys = []
-    for i in person:ys += [i]*len(important.textline)
+    for i in person:ys += [i]*(page_slider.value+1)
     color=[]
     fre_count = []
 
