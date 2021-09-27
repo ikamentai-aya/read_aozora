@@ -1,0 +1,27 @@
+digraph {
+	graph [size="600,600"]
+	node [fixedsize=true height=120 width=360]
+	"セルゲイ・ニコラーエヴィチ"
+	node [fixedsize=true height=110 width=330]
+	"アンナ"
+	node [fixedsize=true height=140 width=420]
+	"ヴラジーミル・ペトローヴィチ"
+	node [fixedsize=true height=120 width=360]
+	"主人"
+	node [fixedsize=true height=110 width=330]
+	"可愛らしいお嬢さん"
+	node [fixedsize=true height=110 width=330]
+	"乳母"
+	node [fixedsize=true height=130 width=390]
+	"父"
+	node [fixedsize=true height=120 width=360]
+	"母"
+	"セルゲイ・ニコラーエヴィチ" -> "可愛らしいお嬢さん" [label="18の時に恋した"]
+	"セルゲイ・ニコラーエヴィチ" -> "乳母" [label="６歳のの時に恋した"]
+	"主人" -> "アンナ" [label="好きになって結婚"]
+	"主人" -> "ヴラジーミル・ペトローヴィチ" [label="初恋の話が聞きたい"]
+	"父" -> "ヴラジーミル・ペトローヴィチ" [label="親子関係、冷淡な優しさ"]
+	"母" -> "ヴラジーミル・ペトローヴィチ" [label="親子関係、構わない"]
+	"父" -> "母" [label="財産目当ての結婚"]
+	"ヴラジーミル・ペトローヴィチ" -> "父" [label="気どり澄ました、うぬぼれの強い、独りよがりの男だと思う"]
+}

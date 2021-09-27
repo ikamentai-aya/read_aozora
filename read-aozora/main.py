@@ -397,7 +397,17 @@ def show_vis():
 #ノードリンク図を作成する関数
 def make_node_link():
     p.text = important.textline[page_slider.value]
+
+    '''
+    print(important.people_list)
+    peoples = [i['people'] for i in important.people_list]
+    for i in important.relation_list:
+        print(i['source'], i['source'] in  peoples)
+        print(i['target'], i['target'] in  peoples)
+    '''
+
     save_path = make_graphvis(page_slider.value, important.people_list, important.relation_list, novel_dict[important.title].graph_path)
+    
     import_graph_info(save_path)
     
 #save_pathに保存されたグラフから情報を取得する
@@ -452,6 +462,7 @@ def import_graph_info(save_path):
             edge_index.append(e)
             edge_color.append(colors[re_emo_dict[m[0]+m[1]]])
             edge_emotion.append(re_emo_dict[m[0]+m[1]]+1)
+
             
     #startからendへの曲線を生成する
     def bezier(start, end, control, steps, bias):
@@ -787,6 +798,7 @@ def ch_remove_renderer():
         important.people_list.remove({'people':rm_people, 'line':rm_line})
         novel_dict[important.title].people_list=important.people_list
     make_person_fre()
+
     save()
 
 #関係性を削除する関数
@@ -953,7 +965,7 @@ def make_person_fre():
         vue.children = [Row(ch_plus_button, ch_minus_button), Row(ch_table, Column(ch_delete_button, ch_edit_button)),Row(re_plus_button, re_minus_button), Row(re_table, Column(re_delete_button, re_edit_button))]
     else:
         vue.children = [Row(ch_plus_button, ch_minus_button), Row(ch_table, Column(ch_delete_button, ch_edit_button)),frequency_heat,Row(re_plus_button, re_minus_button), Row(re_table, Column(re_delete_button, re_edit_button))]
-    #save()
+    save()
 
 #編集のための表を作る関数
 def make_arrange():
@@ -1090,6 +1102,7 @@ auto_ch_button.on_click(auto_character)
 checkbox_group.on_change('active',checkbox_group_renderer)
 
 start()
+print(novel_dict['そして誰もいなくなった'].people_list)
 
 ####HTMLへの受け渡し#####
 doc = curdoc()

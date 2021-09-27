@@ -34,7 +34,9 @@ def make_graphvis(line_number, ch_list, re_list, graph_path):
 
     for j in new_re_dict:
         j_list = j.split(',')
-        graph.edge(j_list[0],j_list[1],new_re_dict[j])
+        graph.edge(j_list[0],j_list[1],'')
+
+    print(graph)
 
     save_path = graph_path +'/'+ str(line_number)
 
